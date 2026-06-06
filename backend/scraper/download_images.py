@@ -76,7 +76,7 @@ STRIP_JS = r"""() => {
 }"""
 
 
-async def worker(ctx, queue, results, lock, done, total):
+async def worker(ctx, queue, results, lock, done, total, delay):
     page = await ctx.new_page()
     while True:
         try:
@@ -110,6 +110,8 @@ async def worker(ctx, queue, results, lock, done, total):
             done[0] += 1
             if done[0] % 20 == 0:
                 print(f"  {done[0]}/{total} processed, {len(results)} saved", flush=True)
+        if delay:
+            await page.wait_for_timeout(delay)
     await page.close()
 
 
@@ -118,6 +120,12 @@ async def main_async(args):
     parts = json.loads((DATA / "parts.json").read_text())
     todo = [p for p in parts if p.get("url")
             and not (IMG_DIR / f"{p['partNumber']}.png").exists()]
+    # Most-reviewed parts first — they're the ones most likely to surface in
+    # search/troubleshoot results, so we maximize visible coverage before any
+    # rate-limiting kicks in. Demo/example parts jump the queue.
+    demo = set(args.first or [])
+    todo.sort(key=lambda p: (0 if p["partNumber"] in demo else 1,
+                             -(p.get("reviewCount") or 0)))
     if args.limit:
         todo = todo[: args.limit]
     print(f"{len(todo)} parts to download ({len(parts)} total)", flush=True)
@@ -136,7 +144,7 @@ async def main_async(args):
         ctx = await browser.new_context(user_agent=UA, locale="en-US",
                                         viewport={"width": 1280, "height": 1000})
         await asyncio.gather(*[
-            worker(ctx, queue, results, lock, done, len(todo))
+            worker(ctx, queue, results, lock, done, len(todo), args.delay)
             for _ in range(args.concurrency)])
         await browser.close()
 
@@ -157,7 +165,10 @@ async def main_async(args):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--limit", type=int, default=0)
-    ap.add_argument("--concurrency", type=int, default=5)
+    ap.add_argument("--concurrency", type=int, default=3)
+    ap.add_argument("--delay", type=int, default=300, help="ms pause between parts per worker")
+    ap.add_argument("--first", nargs="*", default=["PS11752778"],
+                    help="part numbers to download first")
     args = ap.parse_args()
     asyncio.run(main_async(args))
 
