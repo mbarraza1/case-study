@@ -8,7 +8,7 @@ def test_tool_schemas_wellformed():
     names = {t["name"] for t in TOOLS}
     assert names == {
         "search_parts", "get_part_details", "check_compatibility",
-        "get_installation_guide", "troubleshoot",
+        "get_parts_for_model", "get_installation_guide", "troubleshoot",
     }
     for t in TOOLS:
         assert t["input_schema"]["type"] == "object"
@@ -72,6 +72,25 @@ def test_troubleshoot_event(tools_catalog):
     assert events[0]["type"] == "products"
     # the model payload includes which symptoms each part fixes
     assert "fixesSymptoms" in data["parts"][0]
+
+
+def test_get_parts_for_model(tools_catalog):
+    payload, events = run_tool("get_parts_for_model", {"model_number": "WDT780SAEM1"})
+    data = json.loads(payload)
+    assert data["modelKnown"] is True
+    assert data["modelApplianceType"] == "Dishwasher"
+    assert data["count"] == 2                      # PS3406971 + PS11745496 in the fixture
+    assert events[0]["type"] == "products"
+    pns = {c["partNumber"] for c in events[0]["items"]}
+    assert pns == {"PS3406971", "PS11745496"}
+
+
+def test_get_parts_for_model_unknown(tools_catalog):
+    payload, events = run_tool("get_parts_for_model", {"model_number": "NOPE000"})
+    data = json.loads(payload)
+    assert data["modelKnown"] is False
+    assert data["count"] == 0
+    assert events == []
 
 
 def test_unknown_tool(tools_catalog):

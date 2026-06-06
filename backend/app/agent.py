@@ -31,6 +31,7 @@ What you help with:
 - Finding the right part (by name, symptom, brand, or PartSelect "PS" number).
 - Looking up part details: price, availability, ratings, and what it fixes.
 - Checking whether a part is compatible with a customer's appliance model number.
+- Listing the parts available for a specific appliance model number.
 - Installation guidance (difficulty, time, how-to video).
 - Troubleshooting a symptom and recommending the parts that typically fix it.
 
@@ -58,6 +59,7 @@ TOOL_LABELS = {
     "search_parts": "Searching the parts catalog…",
     "get_part_details": "Looking up the part…",
     "check_compatibility": "Checking compatibility…",
+    "get_parts_for_model": "Finding parts for your model…",
     "get_installation_guide": "Finding the installation guide…",
     "troubleshoot": "Diagnosing the problem…",
 }

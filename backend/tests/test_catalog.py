@@ -120,6 +120,18 @@ def test_troubleshoot_ranks_symptom_matches(cat):
     assert "PS3406971" not in pns and "PS11745496" not in pns
 
 
+def test_parts_for_model(cat):
+    parts = cat.parts_for_model("WDT780SAEM1")
+    pns = {p["partNumber"] for p in parts}
+    assert pns == {"PS3406971", "PS11745496"}
+    # sorted by reviewCount desc (PS3406971=200 before PS11745496=120)
+    assert parts[0]["partNumber"] == "PS3406971"
+
+
+def test_parts_for_model_unknown(cat):
+    assert cat.parts_for_model("NOPE000") == []
+
+
 def test_troubleshoot_respects_appliance(cat):
     res = cat.troubleshoot("Dishwasher", "not drying dishes")
     assert "PS11745496" in [p["partNumber"] for p in res]

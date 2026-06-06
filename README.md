@@ -75,14 +75,15 @@ curl localhost:8000/api/parts/PS11752778
 - `Is PS11752778 compatible with my WDT780SAEM1 model?`
 - `The ice maker on my Whirlpool fridge is not working. How can I fix it?`
 - `My dishwasher won't drain` · `door bin for my Whirlpool refrigerator`
+- `What parts do you have for my GNE27JYMWFFS?` · `Is PS304103 compatible with my GNE27JYMWFFS?`
 
 ## Tests
 
 ```bash
-# Backend (39 tests — catalog, compatibility, tools, agent, scraper parsers)
+# Backend (43 tests — catalog, compatibility, tools, agent, scraper parsers)
 cd backend && pip install -r requirements-dev.txt && pytest
 
-# Frontend (13 tests — SSE parsing + card components)
+# Frontend (15 tests — SSE parsing + card components)
 npm test
 ```
 

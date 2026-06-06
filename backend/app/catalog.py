@@ -212,6 +212,19 @@ class Catalog:
                     f"the right part."))
         return result
 
+    # ---- parts for a model ------------------------------------------------- #
+    def parts_for_model(self, model_number: str, limit: int = 8) -> list[dict]:
+        info = self.get_model(model_number)
+        if not info:
+            return []
+        out = []
+        for ps in info.get("parts", []):
+            p = self.get_part(ps)
+            if p:
+                out.append(p)
+        out.sort(key=lambda p: -(p.get("reviewCount") or 0))
+        return out[:limit]
+
     # ---- troubleshooting --------------------------------------------------- #
     def troubleshoot(self, appliance_type: str, symptom: str,
                      brand: Optional[str] = None, limit: int = 6) -> list[dict]:

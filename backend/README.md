@@ -7,7 +7,7 @@ FastAPI service exposing a Claude-powered chat agent for **Refrigerator** and
 app/
   main.py      FastAPI app — /api/health, /api/parts/{ps}, POST /api/chat (SSE)
   agent.py     Claude (claude-sonnet-4-6) streaming tool-use loop + system prompt
-  tools.py     5 agent tools (search / details / compatibility / install / troubleshoot)
+  tools.py     6 agent tools (search / details / compatibility / parts-for-model / install / troubleshoot)
   catalog.py   retrieval layer over the catalog (the "RAG" backbone)
   schemas.py   request models
   data/        parts.json + models.json  (produced by the scraper)
@@ -97,7 +97,7 @@ so they don't depend on the live scrape or an API key:
 
 ```bash
 pip install -r requirements-dev.txt
-pytest                      # 39 tests: catalog, compatibility, tools, agent, scraper parsers
+pytest                      # 43 tests: catalog, compatibility, tools, agent, scraper parsers
 ```
 
 Coverage: keyword search + appliance/brand filters, all compatibility branches

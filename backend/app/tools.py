@@ -88,6 +88,22 @@ TOOLS = [
         },
     },
     {
+        "name": "get_parts_for_model",
+        "description": (
+            "List the parts that fit a specific appliance model number (e.g. "
+            "'what parts do you have for my GNE27JYMWFFS?'). Use when the user wants to see "
+            "available/compatible parts for their model rather than asking about one specific part. "
+            "Returns the model's parts; if the model isn't in the catalog, says so."
+        ),
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "model_number": {"type": "string", "description": "The appliance model number, e.g. GNE27JYMWFFS."},
+            },
+            "required": ["model_number"],
+        },
+    },
+    {
         "name": "troubleshoot",
         "description": (
             "Given an appliance type and a symptom the customer is experiencing (e.g. 'ice maker not "
@@ -171,6 +187,23 @@ def run_tool(name: str, tool_input: dict) -> tuple[str, list[dict]]:
             return json.dumps({"found": False, "partNumber": tool_input.get("part_number")}), []
         guide = _install_guide(part)
         return json.dumps({"found": True, **guide}), [{"type": "install_guide", "guide": guide}]
+
+    if name == "get_parts_for_model":
+        model = tool_input.get("model_number", "")
+        info = catalog.get_model(model)
+        parts = catalog.parts_for_model(model)
+        cards = [_card(p) for p in parts]
+        payload = {
+            "modelNumber": (model or "").strip().upper(),
+            "modelKnown": info is not None,
+            "modelBrand": info.get("brand") if info else None,
+            "modelApplianceType": info.get("applianceType") if info else None,
+            "count": len(cards),
+            "parts": [{k: c[k] for k in ("partNumber", "name", "brand", "partType", "price", "inStock")}
+                      for c in cards],
+        }
+        events = [{"type": "products", "items": cards}] if cards else []
+        return json.dumps(payload), events
 
     if name == "troubleshoot":
         parts = catalog.troubleshoot(
