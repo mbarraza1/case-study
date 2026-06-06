@@ -54,14 +54,17 @@ body {
   padding: 0 20px;
 }
 
-.ps-logo {
-  font-size: 22px;
-  font-weight: 800;
-  letter-spacing: -0.3px;
+.ps-logo-wrap {
+  overflow: hidden;
+  height: 33px;
+  flex: 0 0 auto;
 }
 
-.ps-logo-accent {
-  color: var(--ps-yellow);
+.ps-logo-img {
+  display: block;
+  height: 65px;
+  width: auto;
+  margin-top: -1px;
 }
 
 .ps-header-divider {

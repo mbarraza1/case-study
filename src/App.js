@@ -7,8 +7,12 @@ function App() {
     <div className="App">
       <header className="ps-header">
         <div className="ps-header-inner">
-          <div className="ps-logo">
-            Part<span className="ps-logo-accent">Select</span>
+          <div className="ps-logo-wrap">
+            <img
+              src="/ps-logo-header.svg"
+              alt="PartSelect"
+              className="ps-logo-img"
+            />
           </div>
           <div className="ps-header-divider" />
           <div className="ps-header-titles">
