@@ -19,6 +19,7 @@ from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
+from fastapi.staticfiles import StaticFiles
 
 # Load backend/.env explicitly (relative to this file) so it's found no matter
 # which directory uvicorn was launched from.
@@ -38,6 +39,12 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Self-hosted product images (downloaded by scraper/download_images.py).
+# Served at /static/parts/<PS>.png — see catalog imageUrl.
+_IMAGES_DIR = Path(__file__).resolve().parent / "data" / "images"
+_IMAGES_DIR.mkdir(parents=True, exist_ok=True)
+app.mount("/static/parts", StaticFiles(directory=_IMAGES_DIR), name="part-images")
 
 
 @app.get("/api/health")

@@ -1,5 +1,10 @@
-import React from "react";
+import React, { useState } from "react";
 import Thumbnail from "./Thumbnail";
+import { API_BASE } from "../api/api";
+
+// Backend-relative image paths (/static/parts/..) are served by the API host.
+const resolveImg = (url) =>
+  url && url.startsWith("/") ? `${API_BASE}${url}` : url;
 
 function Stars({ rating }) {
   if (!rating) return null;
@@ -21,6 +26,24 @@ const DIFFICULTY_CLASS = {
   Difficult: "hard",
 };
 
+// Real product photo when we have one; fall back to the generated tile if the
+// part has no image or the image fails to load.
+function PartImage({ part }) {
+  const [failed, setFailed] = useState(false);
+  if (part.imageUrl && !failed) {
+    return (
+      <img
+        className="ps-thumb-img"
+        src={resolveImg(part.imageUrl)}
+        alt={part.name || part.partNumber}
+        loading="lazy"
+        onError={() => setFailed(true)}
+      />
+    );
+  }
+  return <Thumbnail part={part} />;
+}
+
 export default function ProductCard({ part }) {
   const price =
     part.price != null ? `$${Number(part.price).toFixed(2)}` : "Price n/a";
@@ -28,7 +51,7 @@ export default function ProductCard({ part }) {
 
   return (
     <div className="ps-card">
-      <Thumbnail part={part} />
+      <PartImage part={part} />
       <div className="ps-card-body">
         <div className="ps-card-title">{part.name}</div>
         <div className="ps-card-meta">

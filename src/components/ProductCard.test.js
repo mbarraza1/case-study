@@ -36,3 +36,15 @@ test("shows out-of-stock state and price fallback", () => {
   expect(screen.getByText("Out of stock")).toBeInTheDocument();
   expect(screen.getByText("Price n/a")).toBeInTheDocument();
 });
+
+test("renders the real product image (resolved against the API base) when present", () => {
+  render(<ProductCard part={{ ...part, imageUrl: "/static/parts/PS11752778.png" }} />);
+  const img = screen.getByRole("img", { name: /Refrigerator Door Shelf Bin/i });
+  expect(img).toHaveAttribute("src", "http://localhost:8000/static/parts/PS11752778.png");
+});
+
+test("falls back to the generated tile when there is no image", () => {
+  const { container } = render(<ProductCard part={{ ...part, imageUrl: null }} />);
+  // generated tile is an inline svg
+  expect(container.querySelector("svg.ps-thumb")).toBeInTheDocument();
+});

@@ -33,8 +33,12 @@ const DISH = (
 );
 
 export default function Thumbnail({ part, size = 64 }) {
-  const bg = colorFor(part.partNumber || part.name || "x");
+  const seed = part.partNumber || part.name || "x";
+  const bg = colorFor(seed);
   const glyph = (part.applianceType || "").toLowerCase().includes("dish") ? DISH : FRIDGE;
+  // Unique gradient id per thumbnail — duplicate ids across many SVGs on the
+  // page can resolve inconsistently across browsers.
+  const gid = `shine-${seed.replace(/[^A-Za-z0-9]/g, "")}`;
   return (
     <svg
       width={size}
@@ -44,14 +48,14 @@ export default function Thumbnail({ part, size = 64 }) {
       role="img"
       aria-label={part.name || "part"}
     >
-      <rect width="50" height="50" rx="8" fill={bg} />
-      <rect width="50" height="50" rx="8" fill="url(#shine)" />
       <defs>
-        <linearGradient id="shine" x1="0" y1="0" x2="1" y2="1">
+        <linearGradient id={gid} x1="0" y1="0" x2="1" y2="1">
           <stop offset="0%" stopColor="white" stopOpacity="0.18" />
           <stop offset="100%" stopColor="white" stopOpacity="0" />
         </linearGradient>
       </defs>
+      <rect width="50" height="50" rx="8" fill={bg} />
+      <rect width="50" height="50" rx="8" fill={`url(#${gid})`} />
       {glyph}
     </svg>
   );

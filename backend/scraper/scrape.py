@@ -191,7 +191,7 @@ def scrape_card(card: dict, appliance: str, category: str):
         "installVideoUrl": None,
         "symptoms": [],
         "description": blurb,
-        "imageUrl": None,
+        "imageUrl": card.get("img"),
         "url": urljoin(BASE, href.split("#")[0]),
         "compatibleModels": [],
         "enriched": False,
@@ -209,9 +209,14 @@ def scrape_category(br: Browser, cat: dict, appliance: str, max_pages: int, per_
             """() => [...document.querySelectorAll('.nf__part')].map(el => {
                  const a = el.querySelector("a[href*='/PS']");
                  const title = el.querySelector('.nf__part__detail__title');
+                 const img = el.querySelector("img");
+                 // images are lazy-loaded: real URL is in data-src, src holds a placeholder
+                 let src = img ? (img.getAttribute('data-src') || img.getAttribute('src') || '') : '';
+                 if (src.startsWith('data:')) src = img.getAttribute('data-src') || '';
                  return {
                    href: a ? a.getAttribute('href') : null,
                    title: title ? title.textContent.trim() : null,
+                   img: src && src.startsWith('http') ? src : null,
                    text: el.textContent,
                  };
                })"""
@@ -355,8 +360,8 @@ def enrich_part(br: Browser, part: dict, max_models: int = 300):
         part["symptoms"] = syms[:12]
     if data.get("description"):
         part["description"] = data["description"]
-    if data.get("image") and data["image"].startswith("http"):
-        part["imageUrl"] = data["image"]
+    # imageUrl comes from the listing card (reliable product CDN image); the
+    # detail-page hero selector can pick up A/B-test assets, so don't override.
     if data.get("models"):
         part["compatibleModels"] = data["models"][:max_models]
     part["enriched"] = True

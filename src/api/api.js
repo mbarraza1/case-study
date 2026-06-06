@@ -4,7 +4,7 @@
 // supports GET, so we use fetch() + a ReadableStream reader and parse the
 // `data: {...}` frames ourselves, invoking the handler callbacks as events arrive.
 
-const API_BASE =
+export const API_BASE =
   process.env.REACT_APP_API_BASE || "http://localhost:8000";
 
 /**

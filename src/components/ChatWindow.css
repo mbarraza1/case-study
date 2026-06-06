@@ -153,7 +153,18 @@
 }
 .ps-thumb {
   flex: 0 0 auto;
+  width: 64px;
+  height: 64px;
   border-radius: 8px;
+}
+.ps-thumb-img {
+  flex: 0 0 auto;
+  width: 64px;
+  height: 64px;
+  border-radius: 8px;
+  object-fit: contain;
+  background: #fff;
+  border: 1px solid var(--ps-border);
 }
 .ps-card-body {
   flex: 1;
