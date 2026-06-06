@@ -45,6 +45,19 @@ python scraper/scrape.py --help          # all flags
 
 Outputs `app/data/parts.json` and `app/data/models.json`.
 
+### Product images
+
+PartSelect's image CDN is behind Akamai — images can't be hotlinked
+(cross-origin `<img>` 403s) or fetched standalone. `download_images.py` captures
+them by screenshotting the rendered hero image on each part's detail page and
+self-hosts them at `/static/parts/<PS>.png` (served by FastAPI). Parts without a
+cached image fall back to a generated tile in the UI.
+
+```bash
+python scraper/download_images.py                  # all parts, resumable
+python scraper/download_images.py --limit 100 --concurrency 3
+```
+
 ## 4. Run
 
 ```bash
