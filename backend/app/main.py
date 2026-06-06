@@ -13,12 +13,16 @@ from __future__ import annotations
 import json
 import os
 
+from pathlib import Path
+
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 
-load_dotenv()  # read backend/.env (ANTHROPIC_API_KEY)
+# Load backend/.env explicitly (relative to this file) so it's found no matter
+# which directory uvicorn was launched from.
+load_dotenv(Path(__file__).resolve().parent.parent / ".env")
 
 from .agent import run_agent          # noqa: E402  (after load_dotenv)
 from .catalog import catalog          # noqa: E402
