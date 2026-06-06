@@ -1,0 +1,16 @@
+# Node / CRA
+node_modules/
+/build
+npm-debug.log*
+
+# Python
+backend/.venv/
+__pycache__/
+*.pyc
+
+# Secrets
+backend/.env
+.env
+
+# OS
+.DS_Store
