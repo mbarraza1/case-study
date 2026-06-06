@@ -13,6 +13,7 @@ const part = {
   reviewCount: 351,
   difficulty: "Easy",
   hasVideo: true,
+  installVideoUrl: "https://www.youtube.com/watch?v=zSCNN6KpDE8",
   url: "https://www.partselect.com/PS11752778.htm",
 };
 
@@ -25,7 +26,37 @@ test("renders core product fields", () => {
   expect(screen.getByText(/Easy install/)).toBeInTheDocument();
 });
 
-test("links out to the part page", () => {
+test("image links to the part page", () => {
+  render(<ProductCard part={part} />);
+  const imgLink = screen.getByRole("link", { name: /View Refrigerator Door Shelf Bin/i });
+  expect(imgLink).toHaveAttribute("href", part.url);
+});
+
+test("title links to the part page", () => {
+  render(<ProductCard part={part} />);
+  const titleLink = screen.getByRole("link", { name: "Refrigerator Door Shelf Bin" });
+  expect(titleLink).toHaveAttribute("href", part.url);
+});
+
+test("reviews link to the CustomerReview anchor", () => {
+  render(<ProductCard part={part} />);
+  const reviewLink = screen.getByRole("link", { name: /reviews/i });
+  expect(reviewLink).toHaveAttribute("href", `${part.url}#CustomerReview`);
+});
+
+test("install difficulty links to the Instructions anchor", () => {
+  render(<ProductCard part={part} />);
+  const installLink = screen.getByRole("link", { name: /easy install/i });
+  expect(installLink).toHaveAttribute("href", `${part.url}#Instructions`);
+});
+
+test("video tag links to the YouTube URL", () => {
+  render(<ProductCard part={part} />);
+  const videoLink = screen.getByRole("link", { name: /video/i });
+  expect(videoLink).toHaveAttribute("href", part.installVideoUrl);
+});
+
+test("view part button links to the part page", () => {
   render(<ProductCard part={part} />);
   const link = screen.getByRole("link", { name: /view part/i });
   expect(link).toHaveAttribute("href", part.url);

@@ -273,6 +273,7 @@ def _card(part: Optional[dict]) -> Optional[dict]:
         "reviewCount": part.get("reviewCount"),
         "difficulty": part.get("difficulty"),
         "installTime": part.get("installTime"),
+        "installVideoUrl": part.get("installVideoUrl"),
         "hasVideo": bool(part.get("installVideoUrl")),
         "url": part.get("url"),
         "imageUrl": part.get("imageUrl"),

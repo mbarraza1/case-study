@@ -36,7 +36,9 @@ def test_get_part_details_found(tools_catalog):
     assert data["found"] is True
     assert data["symptoms"]                       # enriched symptom list
     assert events[0]["type"] == "products"
-    assert events[0]["items"][0]["partNumber"] == "PS11752778"
+    card = events[0]["items"][0]
+    assert card["partNumber"] == "PS11752778"
+    assert "installVideoUrl" in card   # must be present so the frontend can link to it
 
 
 def test_get_part_details_not_found(tools_catalog):
