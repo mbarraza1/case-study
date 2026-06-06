@@ -1,15 +1,25 @@
-import React, { useState } from "react";
+import React from "react";
 import "./App.css";
 import ChatWindow from "./components/ChatWindow";
 
 function App() {
-
   return (
     <div className="App">
-      <div className="heading">
-        Instalily Case Study
-      </div>
-        <ChatWindow/>
+      <header className="ps-header">
+        <div className="ps-header-inner">
+          <div className="ps-logo">
+            Part<span className="ps-logo-accent">Select</span>
+          </div>
+          <div className="ps-header-divider" />
+          <div className="ps-header-titles">
+            <div className="ps-header-title">Parts Assistant</div>
+            <div className="ps-header-sub">Refrigerator &amp; Dishwasher</div>
+          </div>
+        </div>
+      </header>
+      <main className="ps-main">
+        <ChatWindow />
+      </main>
     </div>
   );
 }
