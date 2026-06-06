@@ -1,70 +1,96 @@
-# Getting Started with Create React App
+# PartSelect Assistant
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+A chat agent for the PartSelect e-commerce site, scoped to **Refrigerator** and
+**Dishwasher** parts. It answers product questions, checks part-to-model
+compatibility, walks through installations, and troubleshoots symptoms — showing
+results as rich product cards inline in the chat.
 
-## Available Scripts
+![stack](https://img.shields.io/badge/frontend-React-337778) ![stack](https://img.shields.io/badge/backend-FastAPI%20%2B%20Claude-1f4e4f)
 
-In the project directory, you can run:
+## What it does
 
-### `npm start`
+- **Find parts** by name, symptom, brand, or PartSelect (PS) number
+- **Compatibility** — "Is PS11752778 compatible with my WDT780SAEM1?" → clear yes/no/uncertain
+- **Installation** — difficulty, time estimate, and how-to video for a part
+- **Troubleshooting** — "ice maker not working" → the parts that usually fix it
+- **Stays in scope** — politely declines anything that isn't a fridge/dishwasher part
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+## Architecture
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+```
+React (chat UI, product cards, SSE)  ──POST /api/chat──►  FastAPI
+                                                            │
+                                              Claude tool-use loop (agent.py)
+                                                            │  5 tools
+                                              Catalog / retrieval (catalog.py)
+                                                            │
+                                       parts.json + models.json  ◄── Playwright scraper
+                                                                     (drives system Chrome,
+                                                                      beats Akamai bot protection)
+```
 
-### `npm test`
+- **Backend**: Python + FastAPI, `claude-sonnet-4-6` with adaptive thinking and a
+  manual streaming tool-use loop. The agent's only data access is through tools,
+  which keeps every answer grounded in the real catalog.
+- **Data**: PartSelect blocks scraping (Akamai → 403), so the catalog is built by
+  a Playwright scraper that drives the locally-installed Chrome (which passes the
+  bot check) and caches the result as JSON. The running app never scrapes.
+- **Frontend**: the provided Create React App, rebranded to PartSelect, streaming
+  responses over SSE and rendering structured cards (products, compatibility
+  verdicts, install guides).
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+See [`backend/README.md`](backend/README.md) for backend details and the scraper.
 
-### `npm run build`
+## Run it (two terminals)
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+### 1 — Backend
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+```bash
+cd backend
+pip install -r requirements.txt
+cp .env.example .env          # then set ANTHROPIC_API_KEY=sk-ant-...
+uvicorn app.main:app --reload --port 8000
+```
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+### 2 — Frontend
 
-### `npm run eject`
+```bash
+npm install
+npm start                     # http://localhost:3000
+```
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+The frontend talks to `http://localhost:8000` by default (override with
+`REACT_APP_API_BASE`).
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+### Verify the data without a key
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+```bash
+curl localhost:8000/api/health        # catalog stats
+curl localhost:8000/api/parts/PS11752778
+```
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+## Try these
 
-## Learn More
+- `How can I install part number PS11752778?`
+- `Is PS11752778 compatible with my WDT780SAEM1 model?`
+- `The ice maker on my Whirlpool fridge is not working. How can I fix it?`
+- `My dishwasher won't drain` · `door bin for my Whirlpool refrigerator`
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+## Tests
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+```bash
+# Backend (39 tests — catalog, compatibility, tools, agent, scraper parsers)
+cd backend && pip install -r requirements-dev.txt && pytest
 
-### Code Splitting
+# Frontend (13 tests — SSE parsing + card components)
+npm test
+```
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+Backend tests run against a fixed fixture catalog (no scrape, no API key needed).
 
-### Analyzing the Bundle Size
+## Extending it
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+- **New capability** → add a tool in `backend/app/tools.py` (schema + handler).
+- **Real / bigger data** → re-implement the functions in `backend/app/catalog.py`
+  (e.g. Postgres + pgvector, or a live PartSelect feed). Tools and agent are untouched.
+- **More appliances** → widen the scraper's `--appliances` and the system-prompt scope.
