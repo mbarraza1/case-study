@@ -30,12 +30,16 @@ export default function CompatibilityResult({ result }) {
             )}
           </div>
           <div className="ps-compat-pair">
-            <strong>{partNumber}</strong> ↔ model <strong>{modelNumber}</strong>
+            {partNumber ? (
+              <><strong>{partNumber}</strong> ↔ model <strong>{modelNumber}</strong></>
+            ) : (
+              <>Model <strong>{modelNumber}</strong></>
+            )}
           </div>
         </div>
       </div>
       {reason && <div className="ps-compat-reason">{reason}</div>}
-      {part && (
+      {part && partNumber && (
         <div className="ps-compat-card">
           <ProductCard part={part} />
         </div>

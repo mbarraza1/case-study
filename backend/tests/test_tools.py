@@ -82,8 +82,11 @@ def test_get_parts_for_model(tools_catalog):
     assert data["modelKnown"] is True
     assert data["modelApplianceType"] == "Dishwasher"
     assert data["count"] == 2                      # PS3406971 + PS11745496 in the fixture
-    assert events[0]["type"] == "products"
-    pns = {c["partNumber"] for c in events[0]["items"]}
+    assert events[0]["type"] == "compatibility"
+    assert events[0]["result"]["compatible"] is True
+    assert events[0]["result"]["modelNumber"] == "WDT780SAEM1"
+    assert events[1]["type"] == "products"
+    pns = {c["partNumber"] for c in events[1]["items"]}
     assert pns == {"PS3406971", "PS11745496"}
 
 

@@ -202,7 +202,21 @@ def run_tool(name: str, tool_input: dict) -> tuple[str, list[dict]]:
             "parts": [{k: c[k] for k in ("partNumber", "name", "brand", "partType", "price", "inStock")}
                       for c in cards],
         }
-        events = [{"type": "products", "items": cards}] if cards else []
+        events = []
+        if info and cards:
+            events.append({"type": "compatibility", "result": {
+                "partNumber": None,
+                "modelNumber": (model or "").strip().upper(),
+                "compatible": True,
+                "confidence": "high",
+                "reason": f"All {len(cards)} parts below are confirmed compatible with model {(model or '').strip().upper()}.",
+                "part": None,
+                "modelKnown": True,
+                "modelBrand": info.get("brand"),
+                "modelApplianceType": info.get("applianceType"),
+            }})
+        if cards:
+            events.append({"type": "products", "items": cards})
         return json.dumps(payload), events
 
     if name == "troubleshoot":
