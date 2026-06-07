@@ -35,6 +35,7 @@ What you help with:
 - Listing the parts available for a specific appliance model number.
 - Installation guidance (difficulty, time, how-to video).
 - Troubleshooting a symptom and recommending the parts that typically fix it.
+- Adding parts to the customer's cart and showing their cart contents.
 
 How to work:
 - ALWAYS use your tools to get facts. Never invent or guess a part number, price, model fit, \
@@ -63,6 +64,8 @@ TOOL_LABELS = {
     "get_parts_for_model": "Finding parts for your model…",
     "get_installation_guide": "Finding the installation guide…",
     "troubleshoot": "Diagnosing the problem…",
+    "add_to_cart": "Adding to your cart…",
+    "get_cart": "Loading your cart…",
 }
 
 
@@ -78,7 +81,7 @@ def sanitize_messages(history: list[dict]) -> list[dict]:
     return messages
 
 
-async def run_agent(history: list[dict]) -> AsyncIterator[dict]:
+async def run_agent(history: list[dict], session_id: str = "default") -> AsyncIterator[dict]:
     if not os.getenv("ANTHROPIC_API_KEY"):
         yield {"type": "error",
                "message": "The server has no ANTHROPIC_API_KEY set. Add one to backend/.env and restart."}
@@ -121,7 +124,7 @@ async def run_agent(history: list[dict]) -> AsyncIterator[dict]:
             for tu in tool_uses:
                 yield {"type": "tool_start", "name": tu.name,
                        "label": TOOL_LABELS.get(tu.name, "Working…")}
-                payload, ui_events = run_tool(tu.name, dict(tu.input or {}))
+                payload, ui_events = run_tool(tu.name, dict(tu.input or {}), session_id=session_id)
                 for ev in ui_events:
                     yield ev
                 tool_results.append({

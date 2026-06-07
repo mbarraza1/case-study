@@ -56,8 +56,13 @@ test("video tag links to the YouTube URL", () => {
   expect(videoLink).toHaveAttribute("href", part.installVideoUrl);
 });
 
-test("view part button links to the part page", () => {
+test("shows Add to Cart button for in-stock parts", () => {
   render(<ProductCard part={part} />);
+  expect(screen.getByRole("button", { name: /add to cart/i })).toBeInTheDocument();
+});
+
+test("shows View part link for out-of-stock parts", () => {
+  render(<ProductCard part={{ ...part, inStock: false }} />);
   const link = screen.getByRole("link", { name: /view part/i });
   expect(link).toHaveAttribute("href", part.url);
 });

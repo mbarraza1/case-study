@@ -17,7 +17,7 @@ const WELCOME = {
   status: null,
 };
 
-function Blocks({ blocks }) {
+function Blocks({ blocks, onCartUpdate }) {
   if (!blocks || !blocks.length) return null;
   return (
     <div className="ps-blocks">
@@ -26,7 +26,7 @@ function Blocks({ blocks }) {
           return (
             <div key={i} className="ps-product-list">
               {b.items.map((p) => (
-                <ProductCard key={p.partNumber} part={p} />
+                <ProductCard key={p.partNumber} part={p} onCartUpdate={onCartUpdate} />
               ))}
             </div>
           );
@@ -43,7 +43,7 @@ function Blocks({ blocks }) {
   );
 }
 
-function ChatWindow() {
+function ChatWindow({ onCartUpdate, onOpenCart }) {
   const [messages, setMessages] = useState([WELCOME]);
   const [input, setInput] = useState("");
   const [isStreaming, setIsStreaming] = useState(false);
@@ -111,11 +111,18 @@ function ChatWindow() {
     await streamChat(history, {
       onText: (delta) => patchLast((m) => (m.content += delta)),
       onToolStart: (evt) => patchLast((m) => (m.status = evt.label)),
-      onCard: (evt) =>
+      onCard: (evt) => {
+        if (evt.type === "cart_update" && onCartUpdate) {
+          onCartUpdate({ items: evt.cart?.items || [] });
+        } else if (evt.type === "cart" && onOpenCart) {
+          if (onCartUpdate) onCartUpdate({ items: evt.items || [] });
+          onOpenCart();
+        }
         patchLast((m) => {
           m.blocks = [...m.blocks, evt];
           m.status = null;
-        }),
+        });
+      },
       onError: (msg) =>
         patchLast((m) => {
           m.error = true;
@@ -157,7 +164,7 @@ function ChatWindow() {
                   {m.status}
                 </div>
               )}
-              <Blocks blocks={m.blocks} />
+              <Blocks blocks={m.blocks} onCartUpdate={onCartUpdate} />
             </div>
           </div>
         ))}

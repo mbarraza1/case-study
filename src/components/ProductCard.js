@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import Thumbnail from "./Thumbnail";
-import { API_BASE } from "../api/api";
+import { API_BASE, addToCart } from "../api/api";
 
 const resolveImg = (url) =>
   url && url.startsWith("/") ? `${API_BASE}${url}` : url;
@@ -51,10 +51,23 @@ function PartImage({ part }) {
   );
 }
 
-export default function ProductCard({ part }) {
+export default function ProductCard({ part, onCartUpdate }) {
+  const [adding, setAdding] = useState(false);
+  const [added, setAdded] = useState(false);
   const price =
     part.price != null ? `$${Number(part.price).toFixed(2)}` : "Price n/a";
   const diffClass = DIFFICULTY_CLASS[part.difficulty] || "moderate";
+
+  const handleAddToCart = async () => {
+    setAdding(true);
+    const result = await addToCart(part.partNumber);
+    setAdding(false);
+    if (result) {
+      setAdded(true);
+      if (onCartUpdate) onCartUpdate(result);
+      setTimeout(() => setAdded(false), 2000);
+    }
+  };
 
   // PartSelect anchor links for reviews and install instructions
   const reviewUrl  = part.url ? `${part.url}#CustomerReview` : null;
@@ -124,11 +137,19 @@ export default function ProductCard({ part }) {
         <div className={`ps-stock ${part.inStock ? "in" : "out"}`}>
           {part.inStock ? "In stock" : "Out of stock"}
         </div>
-        {part.url && (
+        {part.inStock ? (
+          <button
+            className={`ps-add-cart-btn ${added ? "ps-added" : ""}`}
+            onClick={handleAddToCart}
+            disabled={adding}
+          >
+            {added ? "Added ✓" : adding ? "Adding…" : "Add to Cart"}
+          </button>
+        ) : part.url ? (
           <a className="ps-view-btn" href={part.url} {...EXT}>
             View part
           </a>
-        )}
+        ) : null}
       </div>
     </div>
   );

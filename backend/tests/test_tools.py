@@ -9,6 +9,7 @@ def test_tool_schemas_wellformed():
     assert names == {
         "search_parts", "get_part_details", "check_compatibility",
         "get_parts_for_model", "get_installation_guide", "troubleshoot",
+        "add_to_cart", "get_cart",
     }
     for t in TOOLS:
         assert t["input_schema"]["type"] == "object"

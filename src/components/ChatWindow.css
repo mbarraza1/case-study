@@ -397,6 +397,31 @@
 .ps-view-btn:hover {
   filter: brightness(0.95);
 }
+.ps-add-cart-btn {
+  margin-top: 4px;
+  background: var(--ps-teal);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  transition: background 0.15s, transform 0.1s;
+}
+.ps-add-cart-btn:hover:not(:disabled) {
+  background: var(--ps-teal-dark);
+}
+.ps-add-cart-btn:active:not(:disabled) {
+  transform: scale(0.95);
+}
+.ps-add-cart-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+.ps-add-cart-btn.ps-added {
+  background: #1f7a44;
+}
 
 /* ===================== compatibility ===================== */
 .ps-compat {

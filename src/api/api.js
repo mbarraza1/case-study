@@ -7,6 +7,21 @@
 export const API_BASE =
   process.env.REACT_APP_API_BASE || "http://localhost:8000";
 
+// Session ID: persisted in localStorage so the cart survives page refreshes.
+function getSessionId() {
+  if (typeof localStorage === "undefined") return "test";
+  let id = localStorage.getItem("ps_session_id");
+  if (!id) {
+    id =
+      typeof crypto !== "undefined" && crypto.randomUUID
+        ? crypto.randomUUID()
+        : Math.random().toString(36).slice(2) + Date.now().toString(36);
+    localStorage.setItem("ps_session_id", id);
+  }
+  return id;
+}
+export const SESSION_ID = getSessionId();
+
 /**
  * Parse complete SSE frames out of a buffer. Returns the decoded events and the
  * trailing partial frame that should be kept for the next chunk. Pure + exported
@@ -47,7 +62,7 @@ export async function streamChat(messages, handlers = {}) {
   try {
     response = await fetch(`${API_BASE}/api/chat`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", "X-Session-Id": SESSION_ID },
       body: JSON.stringify({ messages }),
     });
   } catch (e) {
@@ -106,3 +121,32 @@ export const getAIMessage = async () => ({
   role: "assistant",
   content: "Please use streamChat() — the assistant now streams responses.",
 });
+
+// ---- Cart API ---- //
+const cartHeaders = {
+  "Content-Type": "application/json",
+  "X-Session-Id": SESSION_ID,
+};
+
+export async function fetchCart() {
+  const resp = await fetch(`${API_BASE}/api/cart`, { headers: cartHeaders });
+  return resp.ok ? resp.json() : { items: [], itemCount: 0 };
+}
+
+export async function addToCart(partNumber) {
+  const resp = await fetch(`${API_BASE}/api/cart/add`, {
+    method: "POST",
+    headers: cartHeaders,
+    body: JSON.stringify({ partNumber }),
+  });
+  return resp.ok ? resp.json() : null;
+}
+
+export async function removeFromCart(partNumber) {
+  const resp = await fetch(`${API_BASE}/api/cart/remove`, {
+    method: "POST",
+    headers: cartHeaders,
+    body: JSON.stringify({ partNumber }),
+  });
+  return resp.ok ? resp.json() : null;
+}

@@ -27,8 +27,9 @@ from fastapi.staticfiles import StaticFiles
 load_dotenv(Path(__file__).resolve().parent.parent / ".env")
 
 from .agent import run_agent          # noqa: E402  (after load_dotenv)
+from .cart import add_to_cart, get_cart, remove_from_cart  # noqa: E402
 from .catalog import catalog          # noqa: E402
-from .schemas import ChatRequest      # noqa: E402
+from .schemas import CartAddRequest, CartRemoveRequest, ChatRequest  # noqa: E402
 
 app = FastAPI(title="PartSelect Assistant API", version="1.0.0")
 
@@ -64,6 +65,34 @@ def get_part(part_number: str):
     if not part:
         raise HTTPException(status_code=404, detail=f"Part {part_number} not found")
     return part
+
+
+# ---- Cart endpoints -------------------------------------------------------- #
+from fastapi import Header  # noqa: E402
+
+
+def _session(x_session_id: str = Header(default="default")) -> str:
+    return x_session_id or "default"
+
+
+@app.get("/api/cart")
+def api_get_cart(session_id: str = Header(default="default", alias="x-session-id")):
+    return {"items": get_cart(session_id), "itemCount": sum(
+        i.get("quantity", 1) for i in get_cart(session_id))}
+
+
+@app.post("/api/cart/add")
+def api_add_to_cart(req: CartAddRequest,
+                    session_id: str = Header(default="default", alias="x-session-id")):
+    items = add_to_cart(session_id, req.partNumber, req.quantity)
+    return {"items": items, "itemCount": sum(i.get("quantity", 1) for i in items)}
+
+
+@app.post("/api/cart/remove")
+def api_remove_from_cart(req: CartRemoveRequest,
+                         session_id: str = Header(default="default", alias="x-session-id")):
+    items = remove_from_cart(session_id, req.partNumber)
+    return {"items": items, "itemCount": sum(i.get("quantity", 1) for i in items)}
 
 
 # Image proxy: serves locally-cached images, or fetches on-demand via a
@@ -162,13 +191,14 @@ def _sse(event: dict) -> str:
 
 
 @app.post("/api/chat")
-async def chat(req: ChatRequest):
+async def chat(req: ChatRequest,
+               session_id: str = Header(default="default", alias="x-session-id")):
     history = [{"role": m.role, "content": m.content} for m in req.messages]
 
     async def stream():
         # an initial comment keeps some proxies from buffering the stream
         yield ": connected\n\n"
-        async for event in run_agent(history):
+        async for event in run_agent(history, session_id=session_id):
             yield _sse(event)
 
     return StreamingResponse(

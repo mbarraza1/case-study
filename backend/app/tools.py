@@ -15,6 +15,7 @@ from __future__ import annotations
 
 import json
 
+from .cart import add_to_cart, cart_summary, get_cart
 from .catalog import _card, catalog
 
 # --------------------------------------------------------------------------- #
@@ -120,6 +121,34 @@ TOOLS = [
             "required": ["appliance_type", "symptom"],
         },
     },
+    {
+        "name": "add_to_cart",
+        "description": (
+            "Add a part to the customer's shopping cart by its PartSelect number. Use when the "
+            "customer says they want to buy a part, add it to their cart, or says 'I'll take it'. "
+            "Returns the updated cart summary."
+        ),
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "part_number": {"type": "string", "description": "PartSelect number, e.g. PS11752778."},
+            },
+            "required": ["part_number"],
+        },
+    },
+    {
+        "name": "get_cart",
+        "description": (
+            "Show the customer's current shopping cart contents, including all items, quantities, "
+            "and total price. Use when the customer asks to see their cart, check what's in it, "
+            "or wants to review before buying."
+        ),
+        "input_schema": {
+            "type": "object",
+            "properties": {},
+            "required": [],
+        },
+    },
 ]
 
 
@@ -139,7 +168,7 @@ def _install_guide(part: dict) -> dict:
     }
 
 
-def run_tool(name: str, tool_input: dict) -> tuple[str, list[dict]]:
+def run_tool(name: str, tool_input: dict, session_id: str = "default") -> tuple[str, list[dict]]:
     """Execute a tool. Returns (model_payload_json, ui_events)."""
     if name == "search_parts":
         parts = catalog.search(
@@ -237,5 +266,16 @@ def run_tool(name: str, tool_input: dict) -> tuple[str, list[dict]]:
         }
         events = [{"type": "products", "items": cards}] if cards else []
         return json.dumps(payload), events
+
+    if name == "add_to_cart":
+        ps = tool_input.get("part_number", "")
+        items = add_to_cart(session_id, ps)
+        summary = cart_summary(session_id)
+        return json.dumps(summary), [{"type": "cart_update", "cart": summary}]
+
+    if name == "get_cart":
+        items = get_cart(session_id)
+        summary = cart_summary(session_id)
+        return json.dumps(summary), [{"type": "cart", "items": items, "summary": summary}]
 
     return json.dumps({"error": f"unknown tool {name}"}), []
