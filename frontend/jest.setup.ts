@@ -1,5 +1,8 @@
 // Runs before framework — set up global mocks
 
+// Mock scrollIntoView (not available in jsdom)
+Element.prototype.scrollIntoView = jest.fn();
+
 // Mock crypto.randomUUID for session ID generation
 Object.defineProperty(globalThis, "crypto", {
   value: {
