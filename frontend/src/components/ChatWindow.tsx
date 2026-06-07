@@ -104,11 +104,12 @@ export default function ChatWindow({ onCartUpdate, onOpenCart }: Props) {
 
   const send = async (text?: string) => {
     const trimmed = (text ?? input).trim();
-    if (!trimmed || isStreaming) return;
+    if ((!trimmed && attachments.length === 0) || isStreaming) return;
 
     userScrolledUp.current = false;
     const currentImages = attachments.length > 0 ? [...attachments] : undefined;
-    const userMsg: Message = { role: "user", content: trimmed, images: currentImages, blocks: [], status: null };
+    const content = trimmed || (currentImages ? "What can you tell me about this?" : "");
+    const userMsg: Message = { role: "user", content, images: currentImages, blocks: [], status: null };
     const history = [...messages, userMsg].map((m) => ({
       role: m.role,
       content: m.content,
