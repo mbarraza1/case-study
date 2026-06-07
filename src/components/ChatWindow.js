@@ -50,9 +50,22 @@ function ChatWindow() {
   const messagesEndRef = useRef(null);
   const textareaRef = useRef(null);
 
+  const messagesContainerRef = useRef(null);
+  const userScrolledUp = useRef(false);
+
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    if (!userScrolledUp.current) {
+      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    }
   }, [messages]);
+
+  const onScroll = () => {
+    const el = messagesContainerRef.current;
+    if (!el) return;
+    // "Near bottom" = within 100px of the bottom edge
+    const atBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 100;
+    userScrolledUp.current = !atBottom;
+  };
 
   const patchLast = (patch) => {
     setMessages((prev) => {
@@ -80,6 +93,7 @@ function ChatWindow() {
     const trimmed = (text ?? input).trim();
     if (!trimmed || isStreaming) return;
 
+    userScrolledUp.current = false;
     const userMsg = { role: "user", content: trimmed, blocks: [] };
     const history = [...messages, userMsg].map((m) => ({
       role: m.role,
@@ -126,7 +140,7 @@ function ChatWindow() {
 
   return (
     <div className="ps-chat">
-      <div className="ps-messages">
+      <div className="ps-messages" ref={messagesContainerRef} onScroll={onScroll}>
         {messages.map((m, i) => (
           <div key={i} className={`ps-row ps-row-${m.role}`}>
             {m.role === "assistant" && <div className="ps-avatar" aria-hidden>PS</div>}
