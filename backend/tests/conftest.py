@@ -18,5 +18,7 @@ def cat() -> Catalog:
 def tools_catalog(monkeypatch, cat):
     """Point tools.run_tool at the fixture catalog instead of the app singleton."""
     import app.tools as tools_mod
+    import app.cart as cart_mod
     monkeypatch.setattr(tools_mod, "catalog", cat)
+    monkeypatch.setattr(cart_mod, "catalog", cat)
     return cat
