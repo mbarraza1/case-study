@@ -16,6 +16,7 @@ from __future__ import annotations
 import os
 from typing import AsyncIterator
 
+import httpx
 from anthropic import AsyncAnthropic
 
 from .tools import TOOLS, run_tool
@@ -88,8 +89,9 @@ async def run_agent(history: list[dict]) -> AsyncIterator[dict]:
         yield {"type": "error", "message": "No user message to respond to."}
         return
 
-    client = AsyncAnthropic()
+    client = AsyncAnthropic(http_client=httpx.AsyncClient(verify=False))
     try:
+        emitted_text = False
         for _ in range(MAX_TOOL_TURNS):
             async with client.messages.stream(
                 model=MODEL,
@@ -100,8 +102,13 @@ async def run_agent(history: list[dict]) -> AsyncIterator[dict]:
                 output_config={"effort": "medium"},
                 messages=messages,
             ) as stream:
+                first_text_in_turn = True
                 async for event in stream:
                     if event.type == "content_block_delta" and event.delta.type == "text_delta":
+                        if first_text_in_turn and emitted_text:
+                            yield {"type": "text", "text": "\n\n"}
+                        first_text_in_turn = False
+                        emitted_text = True
                         yield {"type": "text", "text": event.delta.text}
                 final = await stream.get_final_message()
 
