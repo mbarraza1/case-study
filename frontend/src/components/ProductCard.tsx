@@ -5,8 +5,8 @@ import { Part } from "@/lib/types";
 import { addToCart } from "@/lib/api";
 import Thumbnail from "./Thumbnail";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "";
-const resolveImg = (url: string) => url.startsWith("/") ? `${API_BASE}${url}` : url;
+// Images are served from Next.js public/parts/ — paths like /parts/PS123.jpg work directly.
+const resolveImg = (url: string) => url;
 
 const DIFF_COLORS: Record<string, string> = {
   "Very Easy": "bg-green-100 text-green-800",

@@ -259,10 +259,9 @@ def _card(part: Optional[dict]) -> Optional[dict]:
     """Compact, display-ready subset of a part for the chat UI cards."""
     if not part:
         return None
-    # Use self-hosted image if available, otherwise point to the proxy endpoint.
+    # Images are served as static files from the Next.js frontend (public/parts/).
+    # Parts without a cached image have imageUrl=None; the frontend shows an SVG fallback.
     image_url = part.get("imageUrl")
-    if not image_url and part.get("cdnImageUrl"):
-        image_url = f"/api/image/{part['partNumber']}"
     return {
         "partNumber": part.get("partNumber"),
         "mpn": part.get("mpn"),

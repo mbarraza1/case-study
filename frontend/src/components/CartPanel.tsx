@@ -3,8 +3,7 @@
 import { Part } from "@/lib/types";
 import { removeFromCart } from "@/lib/api";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "";
-const resolveImg = (url: string) => url.startsWith("/") ? `${API_BASE}${url}` : url;
+const resolveImg = (url: string) => url;
 
 interface CartPanelProps {
   items: Part[];

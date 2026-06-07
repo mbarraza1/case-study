@@ -58,16 +58,10 @@ test("renders video tag when hasVideo", () => {
   expect(videoLink).toHaveAttribute("href", part.installVideoUrl);
 });
 
-test("renders product image with /static/ path", () => {
-  render(<ProductCard part={{ ...part, imageUrl: "/static/parts/PS11752778.jpg" }} />);
+test("renders product image from public/parts/ path", () => {
+  render(<ProductCard part={{ ...part, imageUrl: "/parts/PS11752778.jpg" }} />);
   const img = screen.getByRole("img", { name: part.name });
-  expect(img).toHaveAttribute("src", "/static/parts/PS11752778.jpg");
-});
-
-test("renders product image with /api/image/ path", () => {
-  render(<ProductCard part={{ ...part, imageUrl: "/api/image/PS11752778" }} />);
-  const img = screen.getByRole("img", { name: part.name });
-  expect(img).toHaveAttribute("src", "/api/image/PS11752778");
+  expect(img).toHaveAttribute("src", "/parts/PS11752778.jpg");
 });
 
 test("falls back to Thumbnail when no imageUrl", () => {
