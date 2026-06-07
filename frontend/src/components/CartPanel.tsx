@@ -21,11 +21,7 @@ export default function CartPanel({ items, onClose, onUpdate }: CartPanelProps) 
   // Fetch the real PartSelect cart URL when panel opens
   useEffect(() => {
     if (items.length > 0) {
-      fetch(`${API_BASE}/api/cart/partselect`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ partNumber: items[0].partNumber, quantity: 0 }),
-      })
+      fetch(`${API_BASE}/api/cart/partselect/url`)
         .then((r) => r.ok ? r.json() : null)
         .then((data) => { if (data?.cartUrl) setPsCartUrl(data.cartUrl); })
         .catch(() => {});
@@ -94,26 +90,14 @@ export default function CartPanel({ items, onClose, onUpdate }: CartPanelProps) 
                 <span className="text-lg text-ps-teal-dark">${total.toFixed(2)}</span>
               </div>
               <div className="mt-3 flex flex-col gap-1.5">
-                {psCartUrl && (
-                  <a
-                    href={psCartUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="block w-full text-center bg-ps-teal text-white text-sm font-bold px-3 py-2.5 rounded-lg no-underline hover:bg-ps-teal-dark transition-all"
-                  >
-                    Checkout on PartSelect.com →
-                  </a>
-                )}
-                {!psCartUrl && items.filter((i) => i.url).length > 0 && (
-                  <a
-                    href={items[0].url!}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="block w-full text-center bg-ps-teal text-white text-sm font-bold px-3 py-2.5 rounded-lg no-underline hover:bg-ps-teal-dark transition-all"
-                  >
-                    View on PartSelect.com →
-                  </a>
-                )}
+                <a
+                  href={psCartUrl || "https://www.partselect.com/ShoppingCart"}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block w-full text-center bg-ps-teal text-white text-sm font-bold px-3 py-2.5 rounded-lg no-underline hover:bg-ps-teal-dark transition-all"
+                >
+                  Checkout on PartSelect.com →
+                </a>
               </div>
             </div>
           </>

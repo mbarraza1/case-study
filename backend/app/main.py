@@ -96,6 +96,15 @@ async def api_add_to_partselect(req: CartAddRequest):
     return result
 
 
+@app.get("/api/cart/partselect/url")
+async def api_get_partselect_cart_url():
+    """Get the URL to the real PartSelect cart (if a session exists)."""
+    from .partselect_cart import get_session
+    session = await get_session()
+    url = session.get_cart_url()
+    return {"cartUrl": url}
+
+
 
 
 def _sse(event: dict) -> str:

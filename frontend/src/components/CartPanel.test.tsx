@@ -51,10 +51,10 @@ test("shows total price", () => {
   expect(screen.getByText("$104.66")).toBeInTheDocument();
 });
 
-test("shows View on PartSelect link when no cart URL available", () => {
+test("shows Checkout on PartSelect button", () => {
   render(<CartPanel items={mockItems} onClose={() => {}} onUpdate={() => {}} />);
-  const link = screen.getByRole("link", { name: /view on partselect/i });
-  expect(link).toHaveAttribute("href", mockItems[0].url);
+  const link = screen.getByRole("link", { name: /checkout on partselect/i });
+  expect(link).toBeInTheDocument();
 });
 
 test("shows item count in header", () => {
