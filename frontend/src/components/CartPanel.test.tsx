@@ -51,6 +51,11 @@ test("shows Buy on PartSelect links", () => {
   expect(links).toHaveLength(2);
 });
 
+test("shows Open All button when multiple items have URLs", () => {
+  render(<CartPanel items={mockItems} onClose={() => {}} onUpdate={() => {}} />);
+  expect(screen.getByRole("button", { name: /open all 2 items/i })).toBeInTheDocument();
+});
+
 test("shows item count in header", () => {
   render(<CartPanel items={mockItems} onClose={() => {}} onUpdate={() => {}} />);
   expect(screen.getByText("(3)")).toBeInTheDocument();

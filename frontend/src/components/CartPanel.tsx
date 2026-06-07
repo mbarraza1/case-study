@@ -77,6 +77,18 @@ export default function CartPanel({ items, onClose, onUpdate }: CartPanelProps) 
                 <span className="text-lg text-ps-teal-dark">${total.toFixed(2)}</span>
               </div>
               <div className="mt-3 flex flex-col gap-1.5">
+                {items.filter((i) => i.url).length > 1 && (
+                  <button
+                    className="block w-full text-center bg-ps-teal text-white text-sm font-bold px-3 py-2.5 rounded-lg border-none cursor-pointer hover:bg-ps-teal-dark transition-all"
+                    onClick={() => {
+                      items.forEach((item) => {
+                        if (item.url) window.open(item.url, "_blank");
+                      });
+                    }}
+                  >
+                    Open all {items.filter((i) => i.url).length} items on PartSelect
+                  </button>
+                )}
                 {items.map((item) =>
                   item.url ? (
                     <a key={item.partNumber} href={item.url} target="_blank" rel="noopener noreferrer" className="block text-center bg-ps-yellow text-[#3a2c00] text-xs font-bold px-3 py-2 rounded-lg no-underline hover:brightness-95 transition-all">
