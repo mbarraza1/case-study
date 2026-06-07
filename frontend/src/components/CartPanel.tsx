@@ -106,7 +106,7 @@ export default function CartPanel({ items, onClose, onUpdate }: CartPanelProps) 
                       });
                       // Navigate to cart after a brief delay for forms to process
                       setTimeout(() => {
-                        window.open("https://www.partselect.com/ShoppingCart", "_blank");
+                        window.open("https://www.partselect.com/shopping-cart/", "_blank");
                       }, 1500);
                     }}
                   >
