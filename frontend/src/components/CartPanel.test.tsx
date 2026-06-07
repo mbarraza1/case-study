@@ -46,9 +46,9 @@ test("shows total price", () => {
   expect(screen.getByText("$104.66")).toBeInTheDocument();
 });
 
-test("shows Buy on PartSelect button", () => {
+test("shows Checkout on PartSelect button", () => {
   render(<CartPanel items={mockItems} onClose={() => {}} onUpdate={() => {}} />);
-  const btn = screen.getByRole("button", { name: /buy on partselect/i });
+  const btn = screen.getByRole("button", { name: /checkout on partselect/i });
   expect(btn).toBeInTheDocument();
 });
 

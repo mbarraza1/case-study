@@ -77,17 +77,45 @@ export default function CartPanel({ items, onClose, onUpdate }: CartPanelProps) 
                 <span className="text-lg text-ps-teal-dark">${total.toFixed(2)}</span>
               </div>
               <div className="mt-3 flex flex-col gap-1.5">
-                {items.filter((i) => i.url).length > 0 && (
+                {items.length > 0 && (
                   <button
                     className="block w-full text-center bg-ps-teal text-white text-sm font-bold px-3 py-2.5 rounded-lg border-none cursor-pointer hover:bg-ps-teal-dark transition-all"
                     onClick={() => {
-                      const urls = items.filter((i) => i.url).map((i) => i.url!);
-                      urls.forEach((url) => window.open(url, "_blank"));
+                      // Add items to the user's real PartSelect cart using hidden form POSTs.
+                      // Forms bypass CORS and send the user's partselect.com cookies.
+                      // Each form targets a hidden iframe so the page doesn't navigate.
+                      const inventoryIds = items.map((i) => i.partNumber.replace("PS", ""));
+                      inventoryIds.forEach((id, i) => {
+                        const iframe = document.createElement("iframe");
+                        iframe.name = `ps_cart_${i}`;
+                        iframe.style.display = "none";
+                        document.body.appendChild(iframe);
+
+                        const form = document.createElement("form");
+                        form.method = "POST";
+                        form.action = `https://www.partselect.com/api/ShoppingCart/AddToCart?InventoryID=${id}&quantity=1&searchTerm=&source=0`;
+                        form.target = iframe.name;
+                        document.body.appendChild(form);
+                        form.submit();
+
+                        // Cleanup after submission
+                        setTimeout(() => {
+                          iframe.remove();
+                          form.remove();
+                        }, 5000);
+                      });
+                      // Navigate to cart after a brief delay for forms to process
+                      setTimeout(() => {
+                        window.open("https://www.partselect.com/ShoppingCart", "_blank");
+                      }, 1500);
                     }}
                   >
-                    Buy on PartSelect.com ({items.filter((i) => i.url).length} {items.filter((i) => i.url).length === 1 ? "item" : "items"})
+                    Checkout on PartSelect.com ({items.length} {items.length === 1 ? "item" : "items"})
                   </button>
                 )}
+                <p className="text-[10px] text-ps-muted text-center mt-1 mb-0">
+                  Adds items to your PartSelect cart and opens checkout
+                </p>
               </div>
             </div>
           </>
