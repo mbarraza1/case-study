@@ -4,6 +4,7 @@ FastAPI entrypoint for the PartSelect chat agent.
 Endpoints:
   GET  /api/health          -> catalog stats (proves data loaded without an API key)
   GET  /api/parts/{ps}       -> one part (handy for the UI / debugging)
+  GET  /api/image/{ps}       -> proxied product image (fetches from CDN, caches locally)
   POST /api/chat            -> Server-Sent Events stream of the agent's reply
 
 The agent loop lives in agent.py; this module just wires HTTP + SSE + CORS.
@@ -18,7 +19,7 @@ from pathlib import Path
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import StreamingResponse
+from fastapi.responses import Response, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 
 # Load backend/.env explicitly (relative to this file) so it's found no matter
@@ -63,6 +64,96 @@ def get_part(part_number: str):
     if not part:
         raise HTTPException(status_code=404, detail=f"Part {part_number} not found")
     return part
+
+
+# Image proxy: serves locally-cached images, or fetches on-demand via a
+# Playwright browser session (the only way past PartSelect's Akamai CDN).
+_img_lock = None  # initialized lazily to avoid import-time event loop issues
+
+
+def _get_img_lock():
+    global _img_lock
+    if _img_lock is None:
+        import asyncio
+        _img_lock = asyncio.Lock()
+    return _img_lock
+
+
+async def _fetch_image_via_browser(part: dict) -> bytes | None:
+    """Fetch a product image by visiting its page and intercepting the CDN response."""
+    import asyncio
+    from playwright.async_api import async_playwright
+
+    ps_num = part["partNumber"].replace("PS", "")
+    captured = None
+
+    async with async_playwright() as pw:
+        browser = await pw.chromium.launch(
+            channel="chrome", headless=True,
+            args=["--disable-blink-features=AutomationControlled"])
+        ctx = await browser.new_context(
+            user_agent=("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
+                        "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"),
+            viewport={"width": 1280, "height": 900})
+        page = await ctx.new_page()
+
+        async def on_response(response):
+            nonlocal captured
+            if captured:
+                return
+            url = response.url
+            if "azurefd.net" in url and f"{ps_num}-1-M-" in url and response.status == 200:
+                try:
+                    body = await response.body()
+                    if len(body) > 2000:
+                        captured = body
+                except Exception:
+                    pass
+
+        page.on("response", on_response)
+        try:
+            await page.goto(part["url"], wait_until="domcontentloaded", timeout=20000)
+            for _ in range(8):
+                if captured:
+                    break
+                await page.wait_for_timeout(500)
+        except Exception:
+            pass
+        await browser.close()
+    return captured
+
+
+@app.get("/api/image/{part_number}")
+async def get_image(part_number: str):
+    ps = part_number.strip().upper()
+    # Serve from local cache (supports both .jpg and .png from different downloaders)
+    for ext in (".jpg", ".png"):
+        cached = _IMAGES_DIR / f"{ps}{ext}"
+        if cached.exists():
+            media = "image/jpeg" if ext == ".jpg" else "image/png"
+            return Response(content=cached.read_bytes(), media_type=media,
+                            headers={"Cache-Control": "public, max-age=604800"})
+    # Look up part
+    part = catalog.get_part(ps)
+    if not part or not part.get("url"):
+        raise HTTPException(status_code=404, detail="No image available")
+    # Fetch on-demand via browser (one at a time to avoid rate limiting)
+    lock = _get_img_lock()
+    async with lock:
+        # Double-check cache (another request may have fetched it while we waited)
+        for ext in (".jpg", ".png"):
+            cached = _IMAGES_DIR / f"{ps}{ext}"
+            if cached.exists():
+                media = "image/jpeg" if ext == ".jpg" else "image/png"
+                return Response(content=cached.read_bytes(), media_type=media,
+                                headers={"Cache-Control": "public, max-age=604800"})
+        img_bytes = await _fetch_image_via_browser(part)
+    if img_bytes:
+        out = _IMAGES_DIR / f"{ps}.jpg"
+        out.write_bytes(img_bytes)
+        return Response(content=img_bytes, media_type="image/jpeg",
+                        headers={"Cache-Control": "public, max-age=604800"})
+    raise HTTPException(status_code=502, detail="Could not fetch image from CDN")
 
 
 def _sse(event: dict) -> str:

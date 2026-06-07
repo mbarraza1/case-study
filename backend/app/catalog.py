@@ -259,6 +259,10 @@ def _card(part: Optional[dict]) -> Optional[dict]:
     """Compact, display-ready subset of a part for the chat UI cards."""
     if not part:
         return None
+    # Use self-hosted image if available, otherwise point to the proxy endpoint.
+    image_url = part.get("imageUrl")
+    if not image_url and part.get("cdnImageUrl"):
+        image_url = f"/api/image/{part['partNumber']}"
     return {
         "partNumber": part.get("partNumber"),
         "mpn": part.get("mpn"),
@@ -276,7 +280,7 @@ def _card(part: Optional[dict]) -> Optional[dict]:
         "installVideoUrl": part.get("installVideoUrl"),
         "hasVideo": bool(part.get("installVideoUrl")),
         "url": part.get("url"),
-        "imageUrl": part.get("imageUrl"),
+        "imageUrl": image_url,
     }
 
 
