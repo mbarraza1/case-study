@@ -73,7 +73,7 @@ def _build_content(m: dict):
     """Build Anthropic content from a message, including images if present."""
     images = m.get("images") or []
     if not images:
-        return m["content"]
+        return m["content"] or "."
     # Multimodal: image blocks + text block
     content = []
     for img in images:
@@ -85,8 +85,9 @@ def _build_content(m: dict):
                 "data": img["data"],
             },
         })
-    if m["content"]:
-        content.append({"type": "text", "text": m["content"]})
+    # Always include a text block — Claude needs a prompt with images
+    text = m["content"] or "What can you tell me about this image?"
+    content.append({"type": "text", "text": text})
     return content
 
 

@@ -56,8 +56,10 @@ def test_build_content_image_only_no_text():
         {"data": "xyz", "mediaType": "image/png"}
     ]}
     content = _build_content(m)
-    assert len(content) == 1
+    assert len(content) == 2
     assert content[0]["type"] == "image"
+    assert content[1]["type"] == "text"
+    assert "image" in content[1]["text"].lower()
 
 
 def _drain(agen):
