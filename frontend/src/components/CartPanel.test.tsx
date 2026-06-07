@@ -6,11 +6,6 @@ jest.mock("@/lib/api", () => ({
   removeFromCart: jest.fn().mockResolvedValue({ items: [] }),
 }));
 
-// Mock global fetch for the PartSelect cart URL check
-global.fetch = jest.fn().mockResolvedValue({
-  ok: false,
-  json: async () => ({}),
-} as Response);
 
 const mockItems: Part[] = [
   {
@@ -51,10 +46,10 @@ test("shows total price", () => {
   expect(screen.getByText("$104.66")).toBeInTheDocument();
 });
 
-test("shows Checkout on PartSelect button", () => {
+test("shows Buy on PartSelect button", () => {
   render(<CartPanel items={mockItems} onClose={() => {}} onUpdate={() => {}} />);
-  const link = screen.getByRole("link", { name: /checkout on partselect/i });
-  expect(link).toBeInTheDocument();
+  const btn = screen.getByRole("button", { name: /buy on partselect/i });
+  expect(btn).toBeInTheDocument();
 });
 
 test("shows item count in header", () => {

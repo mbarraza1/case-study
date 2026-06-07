@@ -1,11 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import { Part } from "@/lib/types";
 import { removeFromCart } from "@/lib/api";
 
 const resolveImg = (url: string) => url;
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "";
 
 interface CartPanelProps {
   items: Part[];
@@ -16,17 +14,6 @@ interface CartPanelProps {
 export default function CartPanel({ items, onClose, onUpdate }: CartPanelProps) {
   const total = items.reduce((sum, i) => sum + (i.price || 0) * (i.quantity || 1), 0);
   const itemCount = items.reduce((sum, i) => sum + (i.quantity || 1), 0);
-  const [psCartUrl, setPsCartUrl] = useState<string | null>(null);
-
-  // Fetch the real PartSelect cart URL when panel opens
-  useEffect(() => {
-    if (items.length > 0) {
-      fetch(`${API_BASE}/api/cart/partselect/url`)
-        .then((r) => r.ok ? r.json() : null)
-        .then((data) => { if (data?.cartUrl) setPsCartUrl(data.cartUrl); })
-        .catch(() => {});
-    }
-  }, [items]);
 
   const handleRemove = async (partNumber: string) => {
     const result = await removeFromCart(partNumber);
@@ -90,14 +77,17 @@ export default function CartPanel({ items, onClose, onUpdate }: CartPanelProps) 
                 <span className="text-lg text-ps-teal-dark">${total.toFixed(2)}</span>
               </div>
               <div className="mt-3 flex flex-col gap-1.5">
-                <a
-                  href={psCartUrl || "https://www.partselect.com/ShoppingCart"}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="block w-full text-center bg-ps-teal text-white text-sm font-bold px-3 py-2.5 rounded-lg no-underline hover:bg-ps-teal-dark transition-all"
-                >
-                  Checkout on PartSelect.com →
-                </a>
+                {items.filter((i) => i.url).length > 0 && (
+                  <button
+                    className="block w-full text-center bg-ps-teal text-white text-sm font-bold px-3 py-2.5 rounded-lg border-none cursor-pointer hover:bg-ps-teal-dark transition-all"
+                    onClick={() => {
+                      const urls = items.filter((i) => i.url).map((i) => i.url!);
+                      urls.forEach((url) => window.open(url, "_blank"));
+                    }}
+                  >
+                    Buy on PartSelect.com ({items.filter((i) => i.url).length} {items.filter((i) => i.url).length === 1 ? "item" : "items"})
+                  </button>
+                )}
               </div>
             </div>
           </>
