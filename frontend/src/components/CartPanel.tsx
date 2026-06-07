@@ -78,16 +78,20 @@ export default function CartPanel({ items, onClose, onUpdate }: CartPanelProps) 
               </div>
               <div className="mt-3 flex flex-col gap-1.5">
                 {items.filter((i) => i.url).length > 1 && (
-                  <button
-                    className="block w-full text-center bg-ps-teal text-white text-sm font-bold px-3 py-2.5 rounded-lg border-none cursor-pointer hover:bg-ps-teal-dark transition-all"
-                    onClick={() => {
-                      items.forEach((item) => {
-                        if (item.url) window.open(item.url, "_blank");
-                      });
-                    }}
-                  >
-                    Open all {items.filter((i) => i.url).length} items on PartSelect
-                  </button>
+                  <>
+                    <button
+                      className="block w-full text-center bg-ps-teal text-white text-sm font-bold px-3 py-2.5 rounded-lg border-none cursor-pointer hover:bg-ps-teal-dark transition-all"
+                      onClick={() => {
+                        const urls = items.filter((i) => i.url).map((i) => i.url!);
+                        urls.forEach((url) => window.open(url, "_blank"));
+                      }}
+                    >
+                      Open all {items.filter((i) => i.url).length} items on PartSelect
+                    </button>
+                    <p className="text-[10px] text-ps-muted text-center mt-1 mb-0">
+                      Allow popups if your browser blocks some tabs
+                    </p>
+                  </>
                 )}
                 {items.map((item) =>
                   item.url ? (
