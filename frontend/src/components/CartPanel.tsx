@@ -77,6 +77,16 @@ export default function CartPanel({ items, onClose, onUpdate }: CartPanelProps) 
                 <span className="text-lg text-ps-teal-dark">${total.toFixed(2)}</span>
               </div>
               <div className="mt-3 flex flex-col gap-1.5">
+                {items.filter((i) => i.url).length > 1 && (
+                  <button
+                    className="block w-full text-center bg-ps-teal text-white text-sm font-bold px-3 py-2.5 rounded-lg border-none cursor-pointer hover:bg-ps-teal-dark transition-all"
+                    onClick={() => {
+                      items.filter((i) => i.url).forEach((item) => window.open(item.url!, "_blank"));
+                    }}
+                  >
+                    Buy all {items.filter((i) => i.url).length} items on PartSelect
+                  </button>
+                )}
                 {items.filter((i) => i.url).map((item) => (
                   <a
                     key={item.partNumber}
