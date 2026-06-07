@@ -45,3 +45,16 @@ test("renders the PS avatar for assistant messages", () => {
   render(<ChatWindow />);
   expect(screen.getByText("PS")).toBeInTheDocument();
 });
+
+test("shows Thinking indicator after sending a message", async () => {
+  const { streamChat } = require("@/lib/api");
+  // Make streamChat hang (never resolve) so we can observe the thinking state
+  streamChat.mockImplementation(() => new Promise(() => {}));
+
+  render(<ChatWindow />);
+  const textarea = screen.getByPlaceholderText(/ask about/i);
+  fireEvent.change(textarea, { target: { value: "Hello" } });
+  fireEvent.click(screen.getByRole("button", { name: /send/i }));
+
+  expect(await screen.findByText("Thinking…")).toBeInTheDocument();
+});

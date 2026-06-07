@@ -91,12 +91,12 @@ export default function ChatWindow({ onCartUpdate, onOpenCart }: Props) {
     const userMsg: Message = { role: "user", content: trimmed, blocks: [], status: null };
     const history = [...messages, userMsg].map((m) => ({ role: m.role, content: m.content }));
 
-    setMessages((prev) => [...prev, userMsg, { role: "assistant", content: "", blocks: [], status: null }]);
+    setMessages((prev) => [...prev, userMsg, { role: "assistant", content: "", blocks: [], status: "Thinking…" }]);
     setInput("");
     setIsStreaming(true);
 
     await streamChat(history, {
-      onText: (delta) => patchLast((m) => { m.content += delta; }),
+      onText: (delta) => patchLast((m) => { m.content += delta; m.status = null; }),
       onToolStart: (evt) => patchLast((m) => { m.status = evt.label; }),
       onCard: (evt) => {
         const e = evt as Record<string, unknown>;
