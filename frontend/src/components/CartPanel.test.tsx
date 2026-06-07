@@ -6,6 +6,12 @@ jest.mock("@/lib/api", () => ({
   removeFromCart: jest.fn().mockResolvedValue({ items: [] }),
 }));
 
+// Mock global fetch for the PartSelect cart URL check
+global.fetch = jest.fn().mockResolvedValue({
+  ok: false,
+  json: async () => ({}),
+} as Response);
+
 const mockItems: Part[] = [
   {
     partNumber: "PS11752778",
@@ -45,15 +51,10 @@ test("shows total price", () => {
   expect(screen.getByText("$104.66")).toBeInTheDocument();
 });
 
-test("shows Buy on PartSelect links", () => {
+test("shows View on PartSelect link when no cart URL available", () => {
   render(<CartPanel items={mockItems} onClose={() => {}} onUpdate={() => {}} />);
-  const links = screen.getAllByRole("link", { name: /buy.*partselect/i });
-  expect(links).toHaveLength(2);
-});
-
-test("shows Open All button when multiple items have URLs", () => {
-  render(<CartPanel items={mockItems} onClose={() => {}} onUpdate={() => {}} />);
-  expect(screen.getByRole("button", { name: /open all 2 items/i })).toBeInTheDocument();
+  const link = screen.getByRole("link", { name: /view on partselect/i });
+  expect(link).toHaveAttribute("href", mockItems[0].url);
 });
 
 test("shows item count in header", () => {

@@ -28,6 +28,7 @@ load_dotenv(Path(__file__).resolve().parent.parent / ".env")
 from .agent import run_agent          # noqa: E402  (after load_dotenv)
 from .cart import add_to_cart, get_cart, remove_from_cart  # noqa: E402
 from .catalog import catalog          # noqa: E402
+from .partselect_cart import add_to_partselect_cart  # noqa: E402
 from .schemas import CartAddRequest, CartRemoveRequest, ChatRequest  # noqa: E402
 
 app = FastAPI(title="PartSelect Assistant API", version="1.0.0")
@@ -86,6 +87,13 @@ def api_remove_from_cart(req: CartRemoveRequest,
                          session_id: str = Header(default="default", alias="x-session-id")):
     items = remove_from_cart(session_id, req.partNumber)
     return {"items": items, "itemCount": sum(i.get("quantity", 1) for i in items)}
+
+
+@app.post("/api/cart/partselect")
+async def api_add_to_partselect(req: CartAddRequest):
+    """Add a part to the real PartSelect.com cart. Returns a cart URL."""
+    result = await add_to_partselect_cart(req.partNumber, req.quantity)
+    return result
 
 
 

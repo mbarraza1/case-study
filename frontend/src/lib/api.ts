@@ -114,12 +114,31 @@ export async function fetchCart() {
 }
 
 export async function addToCart(partNumber: string) {
+  // Add to our local cart
   const resp = await fetch(`${API_BASE}/api/cart/add`, {
     method: "POST",
     headers: headers(),
     body: JSON.stringify({ partNumber }),
   });
-  return resp.ok ? resp.json() : null;
+  const localResult = resp.ok ? await resp.json() : null;
+
+  // Also add to the real PartSelect cart (best-effort, non-blocking)
+  addToPartSelectCart(partNumber);
+
+  return localResult;
+}
+
+export async function addToPartSelectCart(partNumber: string) {
+  try {
+    const resp = await fetch(`${API_BASE}/api/cart/partselect`, {
+      method: "POST",
+      headers: headers(),
+      body: JSON.stringify({ partNumber }),
+    });
+    return resp.ok ? resp.json() : null;
+  } catch {
+    return null;
+  }
 }
 
 export async function removeFromCart(partNumber: string) {

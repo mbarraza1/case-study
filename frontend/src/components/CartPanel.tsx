@@ -1,9 +1,11 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { Part } from "@/lib/types";
 import { removeFromCart } from "@/lib/api";
 
 const resolveImg = (url: string) => url;
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "";
 
 interface CartPanelProps {
   items: Part[];
@@ -14,6 +16,21 @@ interface CartPanelProps {
 export default function CartPanel({ items, onClose, onUpdate }: CartPanelProps) {
   const total = items.reduce((sum, i) => sum + (i.price || 0) * (i.quantity || 1), 0);
   const itemCount = items.reduce((sum, i) => sum + (i.quantity || 1), 0);
+  const [psCartUrl, setPsCartUrl] = useState<string | null>(null);
+
+  // Fetch the real PartSelect cart URL when panel opens
+  useEffect(() => {
+    if (items.length > 0) {
+      fetch(`${API_BASE}/api/cart/partselect`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ partNumber: items[0].partNumber, quantity: 0 }),
+      })
+        .then((r) => r.ok ? r.json() : null)
+        .then((data) => { if (data?.cartUrl) setPsCartUrl(data.cartUrl); })
+        .catch(() => {});
+    }
+  }, [items]);
 
   const handleRemove = async (partNumber: string) => {
     const result = await removeFromCart(partNumber);
@@ -77,28 +94,25 @@ export default function CartPanel({ items, onClose, onUpdate }: CartPanelProps) 
                 <span className="text-lg text-ps-teal-dark">${total.toFixed(2)}</span>
               </div>
               <div className="mt-3 flex flex-col gap-1.5">
-                {items.filter((i) => i.url).length > 1 && (
-                  <>
-                    <button
-                      className="block w-full text-center bg-ps-teal text-white text-sm font-bold px-3 py-2.5 rounded-lg border-none cursor-pointer hover:bg-ps-teal-dark transition-all"
-                      onClick={() => {
-                        const urls = items.filter((i) => i.url).map((i) => i.url!);
-                        urls.forEach((url) => window.open(url, "_blank"));
-                      }}
-                    >
-                      Open all {items.filter((i) => i.url).length} items on PartSelect
-                    </button>
-                    <p className="text-[10px] text-ps-muted text-center mt-1 mb-0">
-                      Allow popups if your browser blocks some tabs
-                    </p>
-                  </>
+                {psCartUrl && (
+                  <a
+                    href={psCartUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block w-full text-center bg-ps-teal text-white text-sm font-bold px-3 py-2.5 rounded-lg no-underline hover:bg-ps-teal-dark transition-all"
+                  >
+                    Checkout on PartSelect.com →
+                  </a>
                 )}
-                {items.map((item) =>
-                  item.url ? (
-                    <a key={item.partNumber} href={item.url} target="_blank" rel="noopener noreferrer" className="block text-center bg-ps-yellow text-[#3a2c00] text-xs font-bold px-3 py-2 rounded-lg no-underline hover:brightness-95 transition-all">
-                      Buy {item.partNumber} on PartSelect →
-                    </a>
-                  ) : null
+                {!psCartUrl && items.filter((i) => i.url).length > 0 && (
+                  <a
+                    href={items[0].url!}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block w-full text-center bg-ps-teal text-white text-sm font-bold px-3 py-2.5 rounded-lg no-underline hover:bg-ps-teal-dark transition-all"
+                  >
+                    View on PartSelect.com →
+                  </a>
                 )}
               </div>
             </div>
