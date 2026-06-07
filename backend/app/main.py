@@ -102,7 +102,8 @@ async def _fetch_image_via_browser(part: dict) -> bytes | None:
             if captured:
                 return
             url = response.url
-            if "azurefd.net" in url and f"{ps_num}-1-M-" in url and response.status == 200:
+            # Match any medium-size image for this part (e.g. -1-M-, -2-M-, -3-M-)
+            if "azurefd.net" in url and f"{ps_num}-" in url and "-M-" in url and response.status == 200:
                 try:
                     body = await response.body()
                     if len(body) > 2000:

@@ -50,8 +50,8 @@ async def worker(ctx, queue, results, lock, done, total, delay):
             url = response.url
             if captured:
                 return
-            # Match this part's medium image
-            if "azurefd.net" in url and f"{ps_num}-1-M-" in url and response.status == 200:
+            # Match any medium-size image for this part (e.g. -1-M-, -2-M-, -3-M-)
+            if "azurefd.net" in url and f"{ps_num}-" in url and "-M-" in url and response.status == 200:
                 try:
                     body = await response.body()
                     if len(body) > 2000:  # skip tiny placeholders
