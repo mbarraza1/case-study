@@ -48,7 +48,6 @@ test("renders the PS avatar for assistant messages", () => {
 
 test("shows Thinking indicator after sending a message", async () => {
   const { streamChat } = require("@/lib/api");
-  // Make streamChat hang (never resolve) so we can observe the thinking state
   streamChat.mockImplementation(() => new Promise(() => {}));
 
   render(<ChatWindow />);
@@ -57,4 +56,16 @@ test("shows Thinking indicator after sending a message", async () => {
   fireEvent.click(screen.getByRole("button", { name: /send/i }));
 
   expect(await screen.findByText("Thinking…")).toBeInTheDocument();
+});
+
+test("renders attach image button", () => {
+  render(<ChatWindow />);
+  expect(screen.getByRole("button", { name: /attach image/i })).toBeInTheDocument();
+});
+
+test("has a hidden file input for image uploads", () => {
+  const { container } = render(<ChatWindow />);
+  const input = container.querySelector("input[type='file']");
+  expect(input).toBeInTheDocument();
+  expect(input).toHaveAttribute("accept", "image/*");
 });

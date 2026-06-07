@@ -56,9 +56,16 @@ export type Block =
   | { type: "cart_update"; cart: CartSummary }
   | { type: "cart"; items: Part[]; summary: CartSummary };
 
+export interface ImageAttachment {
+  data: string; // base64
+  mediaType: string; // e.g. "image/jpeg"
+  name: string;
+}
+
 export interface Message {
   role: "user" | "assistant";
   content: string;
+  images?: ImageAttachment[];
   blocks: Block[];
   status: string | null;
   error?: boolean;

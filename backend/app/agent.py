@@ -69,13 +69,35 @@ TOOL_LABELS = {
 }
 
 
+def _build_content(m: dict):
+    """Build Anthropic content from a message, including images if present."""
+    images = m.get("images") or []
+    if not images:
+        return m["content"]
+    # Multimodal: image blocks + text block
+    content = []
+    for img in images:
+        content.append({
+            "type": "image",
+            "source": {
+                "type": "base64",
+                "media_type": img["mediaType"],
+                "data": img["data"],
+            },
+        })
+    if m["content"]:
+        content.append({"type": "text", "text": m["content"]})
+    return content
+
+
 def sanitize_messages(history: list[dict]) -> list[dict]:
     """Normalize incoming history into a valid Anthropic `messages` array.
 
     Anthropic requires the first message to be a user turn, but the UI's opening
     welcome line is an assistant message — so drop any leading assistant turns.
+    Converts image attachments into Anthropic's multimodal content format.
     """
-    messages = [{"role": m["role"], "content": m["content"]} for m in history]
+    messages = [{"role": m["role"], "content": _build_content(m)} for m in history]
     while messages and messages[0]["role"] != "user":
         messages.pop(0)
     return messages

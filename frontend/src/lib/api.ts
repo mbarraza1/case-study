@@ -39,8 +39,14 @@ function drainSSE(buffer: string): { events: Record<string, unknown>[]; rest: st
   return { events, rest };
 }
 
+export interface ChatMessage {
+  role: string;
+  content: string;
+  images?: { data: string; mediaType: string }[];
+}
+
 export async function streamChat(
-  messages: { role: string; content: string }[],
+  messages: ChatMessage[],
   handlers: SSEHandlers = {}
 ) {
   const { onText, onToolStart, onCard, onDone, onError } = handlers;

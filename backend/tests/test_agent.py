@@ -5,7 +5,7 @@ here we cover the deterministic, mockable pieces.
 """
 import asyncio
 
-from app.agent import run_agent, sanitize_messages
+from app.agent import _build_content, run_agent, sanitize_messages
 
 
 def test_sanitize_drops_leading_assistant():
@@ -27,7 +27,37 @@ def test_sanitize_all_assistant_is_empty():
 
 def test_sanitize_preserves_user_first():
     history = [{"role": "user", "content": "hi"}, {"role": "assistant", "content": "yo"}]
-    assert sanitize_messages(history) == history
+    out = sanitize_messages(history)
+    assert out[0]["role"] == "user"
+    assert out[0]["content"] == "hi"
+
+
+def test_build_content_text_only():
+    m = {"role": "user", "content": "hello", "images": None}
+    assert _build_content(m) == "hello"
+
+
+def test_build_content_with_images():
+    m = {"role": "user", "content": "what part is this?", "images": [
+        {"data": "abc123", "mediaType": "image/jpeg"}
+    ]}
+    content = _build_content(m)
+    assert isinstance(content, list)
+    assert content[0]["type"] == "image"
+    assert content[0]["source"]["type"] == "base64"
+    assert content[0]["source"]["data"] == "abc123"
+    assert content[0]["source"]["media_type"] == "image/jpeg"
+    assert content[1]["type"] == "text"
+    assert content[1]["text"] == "what part is this?"
+
+
+def test_build_content_image_only_no_text():
+    m = {"role": "user", "content": "", "images": [
+        {"data": "xyz", "mediaType": "image/png"}
+    ]}
+    content = _build_content(m)
+    assert len(content) == 1
+    assert content[0]["type"] == "image"
 
 
 def _drain(agen):

@@ -1,14 +1,20 @@
 """Pydantic request/response models for the API."""
 from __future__ import annotations
 
-from typing import Literal
+from typing import Literal, Optional
 
 from pydantic import BaseModel, Field
+
+
+class ImageData(BaseModel):
+    data: str  # base64
+    mediaType: str  # e.g. "image/jpeg"
 
 
 class ChatMessage(BaseModel):
     role: Literal["user", "assistant"]
     content: str
+    images: Optional[list[ImageData]] = None
 
 
 class ChatRequest(BaseModel):

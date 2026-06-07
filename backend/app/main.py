@@ -97,7 +97,9 @@ def _sse(event: dict) -> str:
 @app.post("/api/chat")
 async def chat(req: ChatRequest,
                session_id: str = Header(default="default", alias="x-session-id")):
-    history = [{"role": m.role, "content": m.content} for m in req.messages]
+    history = [{"role": m.role, "content": m.content,
+                 "images": [img.model_dump() for img in m.images] if m.images else None}
+                for m in req.messages]
 
     async def stream():
         # an initial comment keeps some proxies from buffering the stream
