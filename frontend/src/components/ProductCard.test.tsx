@@ -57,3 +57,20 @@ test("renders video tag when hasVideo", () => {
   const videoLink = screen.getByRole("link", { name: /video/i });
   expect(videoLink).toHaveAttribute("href", part.installVideoUrl);
 });
+
+test("renders product image with /static/ path", () => {
+  render(<ProductCard part={{ ...part, imageUrl: "/static/parts/PS11752778.jpg" }} />);
+  const img = screen.getByRole("img", { name: part.name });
+  expect(img).toHaveAttribute("src", "/static/parts/PS11752778.jpg");
+});
+
+test("renders product image with /api/image/ path", () => {
+  render(<ProductCard part={{ ...part, imageUrl: "/api/image/PS11752778" }} />);
+  const img = screen.getByRole("img", { name: part.name });
+  expect(img).toHaveAttribute("src", "/api/image/PS11752778");
+});
+
+test("falls back to Thumbnail when no imageUrl", () => {
+  const { container } = render(<ProductCard part={{ ...part, imageUrl: undefined }} />);
+  expect(container.querySelector("svg")).toBeInTheDocument();
+});
