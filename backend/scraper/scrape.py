@@ -291,9 +291,21 @@ def enrich_part(br: Browser, part: dict, max_models: int = 300):
             .map(e => e.textContent.trim())
             .find(t => /^(Less than 15 mins|15 ?- ?30 mins|30 ?- ?60 mins|1 ?- ?2 hours|More than 2 hours)$/i.test(t));
           out.installTime = timeEl || null;
-          // repair video (YouTube id)
-          const yt = document.querySelector("[data-yt-init]");
-          out.video = yt ? yt.getAttribute("data-yt-init") : null;
+          // repair video (YouTube id) — only accept a video near the
+          // install/repair section, not a generic page-level promo video.
+          let video = null;
+          document.querySelectorAll("[data-yt-init]").forEach(yt => {
+            const id = yt.getAttribute("data-yt-init");
+            if (!id || video) return;
+            // Walk up to check if this video is in a repair/install context
+            let node = yt;
+            for (let i = 0; i < 6 && node; i++) {
+              const text = (node.className || "") + " " + (node.id || "");
+              if (/repair|install|video|how.?to/i.test(text)) { video = id; break; }
+              node = node.parentElement;
+            }
+          });
+          out.video = video;
           // rating
           const rv = document.querySelector("[itemprop=ratingValue]");
           out.rating = rv ? parseFloat(rv.getAttribute("content") || rv.textContent) : null;
