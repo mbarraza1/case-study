@@ -38,7 +38,7 @@ test("send button is enabled when input has text", () => {
 
 test("shows StarterScreen before first user message", () => {
   render(<ChatWindow />);
-  expect(screen.getByText("Find a part")).toBeInTheDocument();
+  expect(screen.getByText("Refrigerator")).toBeInTheDocument();
 });
 
 test("renders the PS avatar for assistant messages", () => {

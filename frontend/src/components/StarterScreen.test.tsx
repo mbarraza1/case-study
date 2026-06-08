@@ -1,15 +1,7 @@
 import { render, screen, fireEvent } from "@testing-library/react";
 import StarterScreen from "./StarterScreen";
 
-test("renders action tiles", () => {
-  render(<StarterScreen onSend={() => {}} onPrefill={() => {}} />);
-  expect(screen.getByText("Find a part")).toBeInTheDocument();
-  expect(screen.getByText("Search by model")).toBeInTheDocument();
-  expect(screen.getByText("Installation help")).toBeInTheDocument();
-  expect(screen.getByText("Troubleshoot")).toBeInTheDocument();
-});
-
-test("renders appliance buttons", () => {
+test("renders appliance selection buttons", () => {
   render(<StarterScreen onSend={() => {}} onPrefill={() => {}} />);
   expect(screen.getByText("Refrigerator")).toBeInTheDocument();
   expect(screen.getByText("Dishwasher")).toBeInTheDocument();
@@ -20,18 +12,45 @@ test("renders example queries", () => {
   expect(screen.getByText("How can I install part PS11752778?")).toBeInTheDocument();
 });
 
-test("calls onPrefill when action tile is clicked", () => {
-  const onPrefill = jest.fn();
-  render(<StarterScreen onSend={() => {}} onPrefill={onPrefill} />);
-  fireEvent.click(screen.getByText("Find a part"));
-  expect(onPrefill).toHaveBeenCalledWith("I'm looking for ");
+test("shows options after selecting Refrigerator", () => {
+  render(<StarterScreen onSend={() => {}} onPrefill={() => {}} />);
+  fireEvent.click(screen.getByText("Refrigerator"));
+  expect(screen.getByText("Browse parts")).toBeInTheDocument();
+  expect(screen.getByText("Ice maker issues")).toBeInTheDocument();
+  expect(screen.getByText("Leaking")).toBeInTheDocument();
+  expect(screen.getByText("Temperature problems")).toBeInTheDocument();
 });
 
-test("calls onSend when appliance button is clicked", () => {
+test("shows options after selecting Dishwasher", () => {
+  render(<StarterScreen onSend={() => {}} onPrefill={() => {}} />);
+  fireEvent.click(screen.getByText("Dishwasher"));
+  expect(screen.getByText("Browse parts")).toBeInTheDocument();
+  expect(screen.getByText("Won't drain")).toBeInTheDocument();
+  expect(screen.getByText("Making noise")).toBeInTheDocument();
+});
+
+test("calls onSend when a direct option is clicked", () => {
   const onSend = jest.fn();
   render(<StarterScreen onSend={onSend} onPrefill={() => {}} />);
   fireEvent.click(screen.getByText("Refrigerator"));
-  expect(onSend).toHaveBeenCalledWith("Show me popular refrigerator parts");
+  fireEvent.click(screen.getByText("Ice maker issues"));
+  expect(onSend).toHaveBeenCalledWith("My ice maker is not working");
+});
+
+test("calls onPrefill for options ending with a space", () => {
+  const onPrefill = jest.fn();
+  render(<StarterScreen onSend={() => {}} onPrefill={onPrefill} />);
+  fireEvent.click(screen.getByText("Dishwasher"));
+  fireEvent.click(screen.getByText("Troubleshoot a problem"));
+  expect(onPrefill).toHaveBeenCalledWith("My dishwasher is ");
+});
+
+test("back button returns to appliance selection", () => {
+  render(<StarterScreen onSend={() => {}} onPrefill={() => {}} />);
+  fireEvent.click(screen.getByText("Refrigerator"));
+  expect(screen.queryByText("Dishwasher")).not.toBeInTheDocument();
+  fireEvent.click(screen.getByText("← Back"));
+  expect(screen.getByText("Dishwasher")).toBeInTheDocument();
 });
 
 test("calls onSend when example is clicked", () => {
