@@ -1,97 +1,196 @@
 # PartSelect Assistant
 
-A chat agent for the PartSelect e-commerce site, scoped to **Refrigerator** and
-**Dishwasher** parts. It answers product questions, checks part-to-model
-compatibility, walks through installations, and troubleshoots symptoms — showing
-results as rich product cards inline in the chat.
-
-![stack](https://img.shields.io/badge/frontend-React-337778) ![stack](https://img.shields.io/badge/backend-FastAPI%20%2B%20Claude-1f4e4f)
+An AI-powered chat agent for PartSelect.com, scoped to **Refrigerator** and **Dishwasher** parts. It helps customers find parts, verify compatibility, get installation guidance, troubleshoot symptoms, and manage a shopping cart — with results rendered as rich interactive cards.
 
 ## What it does
 
+- **Guided onboarding** — select your appliance, then choose from common symptoms, model lookup, or part browsing
 - **Find parts** by name, symptom, brand, or PartSelect (PS) number
-- **Compatibility** — "Is PS11752778 compatible with my WDT780SAEM1?" → clear yes/no/uncertain
-- **Installation** — difficulty, time estimate, and how-to video for a part
-- **Troubleshooting** — "ice maker not working" → the parts that usually fix it
-- **Stays in scope** — politely declines anything that isn't a fridge/dishwasher part
+- **Compatibility** — "Is PS11752778 compatible with my WDT780SAEM1?" → clear yes/no with confidence level
+- **Model lookup** — "What parts fit my GNE27JYMWFFS?" → all compatible parts with confirmation banner
+- **Installation** — difficulty rating, time estimate, and how-to video
+- **Troubleshooting** — "My dishwasher won't drain" → parts that fix it, ranked by relevance
+- **Shopping cart** — add parts from chat, view in slide-out panel, buy on PartSelect.com
+- **Image attachments** — photograph a model tag or broken part, Claude vision identifies it
+- **Scope guardrails** — politely declines anything outside refrigerator/dishwasher parts
 
 ## Architecture
 
 ```
-React (chat UI, product cards, SSE)  ──POST /api/chat──►  FastAPI
-                                                            │
-                                              Claude tool-use loop (agent.py)
-                                                            │  5 tools
-                                              Catalog / retrieval (catalog.py)
-                                                            │
-                                       parts.json + models.json  ◄── Playwright scraper
-                                                                     (drives system Chrome,
-                                                                      beats Akamai bot protection)
+Next.js 16 (port 3000)                    FastAPI (port 8000)
+├── App Router + Tailwind CSS v4           ├── /api/chat (SSE streaming)
+├── TypeScript components                  ├── /api/cart/* (cart CRUD)
+├── SSE streaming client                   ├── /api/parts/{ps}
+├── Static product images                  └── /api/health
+└── Rewrites /api/* → FastAPI
+                                           Claude Sonnet 4.6 (tool-use loop)
+                                           ├── 8 tools (search, compat, troubleshoot...)
+                                           └── Catalog retrieval (parts.json + models.json)
 ```
 
-- **Backend**: Python + FastAPI, `claude-sonnet-4-6` with adaptive thinking and a
-  manual streaming tool-use loop. The agent's only data access is through tools,
-  which keeps every answer grounded in the real catalog.
-- **Data**: PartSelect blocks scraping (Akamai → 403), so the catalog is built by
-  a Playwright scraper that drives the locally-installed Chrome (which passes the
-  bot check) and caches the result as JSON. The running app never scrapes.
-- **Frontend**: the provided Create React App, rebranded to PartSelect, streaming
-  responses over SSE and rendering structured cards (products, compatibility
-  verdicts, install guides).
+## Tech Stack
 
-See [`backend/README.md`](backend/README.md) for backend details and the scraper.
+| Layer | Technology |
+|-------|-----------|
+| Frontend | Next.js 16, TypeScript, Tailwind CSS v4, marked |
+| Backend | FastAPI, Python 3.13, Pydantic v2, uvicorn |
+| AI | Claude Sonnet 4.6 (Anthropic SDK, streaming tool-use) |
+| Data | Static JSON catalog (985 parts, 4,997 models) |
+| Scraper | Playwright (offline, drives Chrome to bypass Akamai) |
+| Testing | pytest (59 tests), Jest + Testing Library (56 tests) |
 
-## Run it (two terminals)
+## Setup
 
-### 1 — Backend
+### Prerequisites
+
+- **Node.js** 18+ and npm
+- **Python** 3.11+
+- **Anthropic API key** (or access to a compatible proxy)
+
+### macOS
 
 ```bash
+# Clone
+git clone https://github.com/mbarraza1/case-study.git
+cd case-study
+
+# Backend
 cd backend
+python3 -m venv .venv
+source .venv/bin/activate
 pip install -r requirements.txt
-cp .env.example .env          # then set ANTHROPIC_API_KEY=sk-ant-...
-uvicorn app.main:app --reload --port 8000
-```
+cp .env.example .env
+# Edit .env → set ANTHROPIC_API_KEY=sk-ant-...
+cd ..
 
-### 2 — Frontend
-
-```bash
+# Frontend
+cd frontend
 npm install
-npm start                     # http://localhost:3000
+cd ..
 ```
 
-The frontend talks to `http://localhost:8000` by default (override with
-`REACT_APP_API_BASE`).
+### Windows
 
-### Verify the data without a key
+```powershell
+# Clone
+git clone https://github.com/mbarraza1/case-study.git
+cd case-study
+
+# Backend
+cd backend
+python -m venv .venv
+.venv\Scripts\activate
+pip install -r requirements.txt
+copy .env.example .env
+# Edit .env → set ANTHROPIC_API_KEY=sk-ant-...
+cd ..
+
+# Frontend
+cd frontend
+npm install
+cd ..
+```
+
+## Run (two terminals)
+
+### macOS
 
 ```bash
-curl localhost:8000/api/health        # catalog stats
-curl localhost:8000/api/parts/PS11752778
+# Terminal 1 — Backend
+cd backend
+source .venv/bin/activate
+uvicorn app.main:app --reload --port 8000
+
+# Terminal 2 — Frontend
+cd frontend
+npm run dev
+```
+
+### Windows
+
+```powershell
+# Terminal 1 — Backend
+cd backend
+.venv\Scripts\activate
+uvicorn app.main:app --reload --port 8000
+
+# Terminal 2 — Frontend
+cd frontend
+npm run dev
+```
+
+Open **http://localhost:3000** in your browser.
+
+### Verify without an API key
+
+```bash
+curl http://localhost:8000/api/health        # catalog stats
+curl http://localhost:8000/api/parts/PS11752778   # part details
 ```
 
 ## Try these
 
-- `How can I install part number PS11752778?`
-- `Is PS11752778 compatible with my WDT780SAEM1 model?`
-- `The ice maker on my Whirlpool fridge is not working. How can I fix it?`
-- `My dishwasher won't drain` · `door bin for my Whirlpool refrigerator`
-- `What parts do you have for my GNE27JYMWFFS?` · `Is PS304103 compatible with my GNE27JYMWFFS?`
+- Click **Dishwasher** → **Won't drain** (guided troubleshooting)
+- `What parts do you have for my GNE27JYMWFFS?` (model lookup + compatibility banner)
+- `Is PS11752778 compatible with my WDT780SAEM1?` (cross-appliance incompatibility)
+- `How can I install part PS11752778?` (install guide with video)
+- `The ice maker on my GE fridge isn't working` (symptom troubleshooting)
+- Attach a photo of your model tag (vision identification)
+- Click **Add to Cart** on any product card, then open the cart panel
 
 ## Tests
 
 ```bash
-# Backend (43 tests — catalog, compatibility, tools, agent, scraper parsers)
-cd backend && pip install -r requirements-dev.txt && pytest
+# Backend (59 tests — catalog, compatibility, tools, agent, cart, scraper)
+cd backend
+source .venv/bin/activate   # macOS
+# .venv\Scripts\activate    # Windows
+pytest
 
-# Frontend (15 tests — SSE parsing + card components)
+# Frontend (56 tests — components, API, SSE parsing)
+cd frontend
 npm test
 ```
 
-Backend tests run against a fixed fixture catalog (no scrape, no API key needed).
+Backend tests run against fixture data — no API key or network needed.
 
-## Extending it
+## Project Structure
 
-- **New capability** → add a tool in `backend/app/tools.py` (schema + handler).
-- **Real / bigger data** → re-implement the functions in `backend/app/catalog.py`
-  (e.g. Postgres + pgvector, or a live PartSelect feed). Tools and agent are untouched.
-- **More appliances** → widen the scraper's `--appliances` and the system-prompt scope.
+```
+case-study/
+├── backend/
+│   ├── app/
+│   │   ├── main.py          # FastAPI endpoints (health, parts, cart, chat SSE)
+│   │   ├── agent.py         # Claude streaming tool-use loop + system prompt
+│   │   ├── tools.py         # 8 tool schemas + dispatch
+│   │   ├── catalog.py       # Retrieval layer (search, compat, troubleshoot)
+│   │   ├── cart.py          # In-memory cart storage
+│   │   ├── schemas.py       # Pydantic request models
+│   │   └── data/            # parts.json, models.json, images/
+│   ├── scraper/             # Playwright catalog + image scrapers
+│   └── tests/               # pytest suite
+├── frontend/
+│   ├── src/
+│   │   ├── app/             # Next.js App Router (layout, page, globals.css)
+│   │   ├── components/      # ChatWindow, ProductCard, CartPanel, etc.
+│   │   └── lib/             # api.ts, session.ts, types.ts
+│   ├── public/parts/        # Pre-cached product images (118)
+│   ├── next.config.ts       # API rewrites, image config
+│   └── jest.config.ts       # Test configuration
+└── README.md
+```
+
+## Key Design Decisions
+
+- **Grounded responses** — the agent can only surface data tools return from the catalog. It cannot invent part numbers, prices, or compatibility claims.
+- **Prefix-stem matching** — "drain" matches "draining", "cool" matches "cooling". Fast deterministic retrieval without embeddings.
+- **No filler text** — system prompt instructs Claude to call tools immediately and never narrate its search process.
+- **Static images** — PartSelect's CDN is behind Akamai (403s all external requests). Images are pre-captured via Playwright and served as Next.js static files.
+- **Session-based cart** — UUID in localStorage + backend in-memory store. Survives refresh, isolated per user.
+
+## Extending
+
+- **New tool** → add schema + handler in `backend/app/tools.py`
+- **More data** → re-implement functions in `backend/app/catalog.py` (e.g., Postgres + pgvector)
+- **More appliances** → widen scraper `--appliances` flag and system prompt scope
+- **Production deployment** → add persistent cart storage (Redis/Postgres), proper session auth, rate limiting
