@@ -231,6 +231,14 @@ def run_tool(name: str, tool_input: dict, session_id: str = "default") -> tuple[
             "parts": [{k: c[k] for k in ("partNumber", "name", "brand", "partType", "price", "inStock")}
                       for c in cards],
         }
+        # If model not found, suggest similar models
+        if not info:
+            suggestions = catalog.suggest_models(model)
+            if suggestions:
+                payload["suggestedModels"] = [
+                    {"model": s.get("model", ""), "brand": s.get("brand"), "applianceType": s.get("applianceType")}
+                    for s in suggestions
+                ]
         events = []
         if info and cards:
             events.append({"type": "compatibility", "result": {

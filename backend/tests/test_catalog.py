@@ -132,6 +132,18 @@ def test_parts_for_model_unknown(cat):
     assert cat.parts_for_model("NOPE000") == []
 
 
+def test_suggest_models_finds_similar(cat):
+    # WDT780SAEM1 is in fixtures; WDT780SAEM9 should match by prefix
+    suggestions = cat.suggest_models("WDT780SAEM9")
+    assert len(suggestions) >= 1
+    assert suggestions[0]["model"] == "WDT780SAEM1"
+
+
+def test_suggest_models_empty_for_no_match(cat):
+    suggestions = cat.suggest_models("ZZZZZZZZZ")
+    assert suggestions == []
+
+
 def test_troubleshoot_respects_appliance(cat):
     res = cat.troubleshoot("Dishwasher", "not drying dishes")
     assert "PS11745496" in [p["partNumber"] for p in res]

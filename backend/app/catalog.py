@@ -113,6 +113,24 @@ class Catalog:
                 return info
         return None
 
+    def suggest_models(self, model_number: str, limit: int = 5) -> list[dict]:
+        """Find similar models by prefix when an exact match fails."""
+        if not model_number:
+            return []
+        norm = _norm_model(model_number)
+        # Try progressively shorter prefixes (e.g. LFX28978ST → LFX28978 → LFX2897 → LFX289...)
+        suggestions = []
+        for prefix_len in range(len(norm), 3, -1):
+            prefix = norm[:prefix_len]
+            for key, info in self.models.items():
+                if _norm_model(key).startswith(prefix) and info not in suggestions:
+                    suggestions.append(info)
+                    if len(suggestions) >= limit:
+                        return suggestions
+            if suggestions:
+                return suggestions
+        return suggestions
+
     # ---- search (keyword retrieval) --------------------------------------- #
     def search(self, query: str, appliance_type: Optional[str] = None,
                brand: Optional[str] = None, limit: int = 6) -> list[dict]:

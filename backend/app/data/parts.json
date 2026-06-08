@@ -2029,7 +2029,9 @@
     "description": "This is the dishrack slide track for the left side of various dishwashers. This track allows your upper dishrack to be supported and slide in and out of the dishwasher to place or remove dishes from the dishrack as necessary. If your left dishrack is currently broken or damaged, ",
     "imageUrl": "/parts/PS12584376.png",
     "url": "https://www.partselect.com/PS12584376-Whirlpool-W11259785-Dishwasher-Dish-Rack-Slide-Track-Left-Side.htm?SourceCode=18",
-    "compatibleModels": [],
+    "compatibleModels": [
+      "LFX28978ST"
+    ],
     "enriched": false,
     "cdnImageUrl": "https://partselectcom-gtcdcddbene3cpes.z01.azurefd.net/12584376-1-M-Whirlpool-W11259785-Dishwasher-Dish-Rack-Slide-Track-Left-Side.jpg"
   },
@@ -13232,7 +13234,8 @@
       "66512776K312",
       "66512779K312",
       "66512782K310",
-      "66512782K312"
+      "66512782K312",
+      "LFX28978ST"
     ],
     "enriched": true,
     "cdnImageUrl": "https://partselectcom-gtcdcddbene3cpes.z01.azurefd.net/12578165-1-M-Whirlpool-W11175771-Dishwasher-INLET-VALVE.jpg"
@@ -18246,7 +18249,8 @@
       "73053",
       "73055",
       "73063",
-      "73065"
+      "73065",
+      "LFX28978ST"
     ],
     "enriched": true,
     "cdnImageUrl": "https://partselectcom-gtcdcddbene3cpes.z01.azurefd.net/12374439-1-M-LG-AGU75188619-Refrigerator-Front-Plate-Assembly.jpg"
@@ -22656,7 +22660,9 @@
     "description": "This handle screw, also known as a mounting bolt, is a mounting screw to help secure the door handle to your refrigerator door. If your handle is loose, you may just need to tighten the screw. If your screw is missing or broken, it may need to be replaced. There are multiple hand",
     "imageUrl": null,
     "url": "https://www.partselect.com/PS8752913-LG-MJB63190001-Handle-Screw.htm?SourceCode=18",
-    "compatibleModels": [],
+    "compatibleModels": [
+      "LFX28978ST"
+    ],
     "enriched": false,
     "cdnImageUrl": "https://partselectcom-gtcdcddbene3cpes.z01.azurefd.net/8752913-1-M-LG-MJB63190001-Handle-Screw.jpg"
   },
@@ -23285,7 +23291,9 @@
     "description": "This water tube, or plastic tube, is used in refrigerators and freezers. The tube ensures water is directed to parts of the refrigerator that need it, such as the water dispenser and ice maker. If you find that your current one is leaking or broken in any way, replacing the tube ",
     "imageUrl": null,
     "url": "https://www.partselect.com/PS3536013-LG-MJU62070602-Plastic-Tube-5-16-Inch.htm?SourceCode=18",
-    "compatibleModels": [],
+    "compatibleModels": [
+      "LFX28978ST"
+    ],
     "enriched": false,
     "cdnImageUrl": "https://partselectcom-gtcdcddbene3cpes.z01.azurefd.net/3536013-1-M-LG-MJU62070602-Plastic-Tube-5-16-Inch.jpg"
   },
@@ -28599,7 +28607,9 @@
     "description": "The interior light in your refrigerator is controlled by a switch that is activated when the door is opened and closed. If your refrigerator light will not turn on, or stays on when the door is closed, you could have a faulty switch. The switch is spring-loaded and is a generally",
     "imageUrl": "/parts/PS3529268.jpg",
     "url": "https://www.partselect.com/PS3529268-LG-6600JB1010A-Refrigerator-Door-Switch.htm?SourceCode=18",
-    "compatibleModels": [],
+    "compatibleModels": [
+      "LFX28978ST"
+    ],
     "enriched": false,
     "cdnImageUrl": "https://partselectcom-gtcdcddbene3cpes.z01.azurefd.net/3529268-1-M-LG-6600JB1010A-Refrigerator-Door-Switch.jpg"
   },
@@ -31616,7 +31626,9 @@
     "description": "This is a drawer roller for the freezer compartment of your LG refrigerator. This roller is made of white plastic, and acts as a wheel to allow the drawer to glide smoothly back and forth when you open and close the freezer compartment. Over time and with further frequent use, th",
     "imageUrl": null,
     "url": "https://www.partselect.com/PS3532772-LG-AHJ72909001-Roller-Assembly.htm?SourceCode=18",
-    "compatibleModels": [],
+    "compatibleModels": [
+      "LFX28978ST"
+    ],
     "enriched": false,
     "cdnImageUrl": "https://partselectcom-gtcdcddbene3cpes.z01.azurefd.net/3532772-1-M-LG-AHJ72909001-Roller-Assembly.jpg"
   },
