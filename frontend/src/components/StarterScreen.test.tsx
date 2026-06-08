@@ -9,9 +9,10 @@ test("renders action tiles", () => {
   expect(screen.getByText("Troubleshoot")).toBeInTheDocument();
 });
 
-test("renders example section", () => {
+test("renders appliance buttons", () => {
   render(<StarterScreen onSend={() => {}} onPrefill={() => {}} />);
-  expect(screen.getByText(/try an example/i)).toBeInTheDocument();
+  expect(screen.getByText("Refrigerator")).toBeInTheDocument();
+  expect(screen.getByText("Dishwasher")).toBeInTheDocument();
 });
 
 test("renders example queries", () => {
@@ -26,11 +27,11 @@ test("calls onPrefill when action tile is clicked", () => {
   expect(onPrefill).toHaveBeenCalledWith("I'm looking for ");
 });
 
-test("calls onSend when example is clicked", () => {
+test("calls onSend when appliance button is clicked", () => {
   const onSend = jest.fn();
   render(<StarterScreen onSend={onSend} onPrefill={() => {}} />);
-  fireEvent.click(screen.getByText("How can I install part PS11752778?"));
-  expect(onSend).toHaveBeenCalledWith("How can I install part PS11752778?");
+  fireEvent.click(screen.getByText("Refrigerator"));
+  expect(onSend).toHaveBeenCalledWith("Show me popular refrigerator parts");
 });
 
 test("calls onSend when example is clicked", () => {

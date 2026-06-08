@@ -41,6 +41,27 @@ export default function StarterScreen({ onSend, onPrefill }: Props) {
         ))}
       </div>
 
+      {/* Appliance selection */}
+      <div className="mt-4">
+        <span className="block text-[10px] font-semibold uppercase tracking-wider text-ps-muted/70 mb-2">Browse by appliance</span>
+        <div className="flex gap-2">
+          <button
+            className="flex items-center gap-2 bg-white border border-ps-border/60 rounded-xl px-4 py-2.5 cursor-pointer hover:border-ps-teal/40 hover:shadow-sm transition-all"
+            onClick={() => onSend("Show me popular refrigerator parts")}
+          >
+            <span className="text-lg">❄️</span>
+            <span className="text-[13px] font-medium text-ps-text">Refrigerator</span>
+          </button>
+          <button
+            className="flex items-center gap-2 bg-white border border-ps-border/60 rounded-xl px-4 py-2.5 cursor-pointer hover:border-ps-teal/40 hover:shadow-sm transition-all"
+            onClick={() => onSend("Show me popular dishwasher parts")}
+          >
+            <span className="text-lg">🍽️</span>
+            <span className="text-[13px] font-medium text-ps-text">Dishwasher</span>
+          </button>
+        </div>
+      </div>
+
       {/* Examples */}
       <div className="mt-4">
         <span className="block text-[10px] font-semibold uppercase tracking-wider text-ps-muted/70 mb-2">Try an example</span>
