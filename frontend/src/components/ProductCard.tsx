@@ -59,9 +59,15 @@ export default function ProductCard({ part, onCartUpdate }: ProductCardProps) {
         </div>
         <div className="flex flex-wrap items-center gap-2 mt-2">
           {part.rating && (
-            <span className="text-[11px] text-ps-muted">
-              <span className="text-amber-400">★</span> {part.rating}{part.reviewCount ? ` (${part.reviewCount})` : ""}
-            </span>
+            part.url ? (
+              <a href={`${part.url}#CustomerReview`} target="_blank" rel="noopener noreferrer" className="text-[11px] text-ps-muted no-underline hover:text-ps-teal transition-colors">
+                <span className="text-amber-400">★</span> {part.rating}{part.reviewCount ? ` (${part.reviewCount})` : ""}
+              </a>
+            ) : (
+              <span className="text-[11px] text-ps-muted">
+                <span className="text-amber-400">★</span> {part.rating}{part.reviewCount ? ` (${part.reviewCount})` : ""}
+              </span>
+            )
           )}
           {part.difficulty && (
             <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded ${
