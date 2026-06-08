@@ -22,7 +22,7 @@ const WELCOME: Message = {
 function Blocks({ blocks, onCartUpdate }: { blocks: Block[]; onCartUpdate?: (data: { items: Part[] }) => void }) {
   if (!blocks.length) return null;
   return (
-    <div className="mt-2.5 flex flex-col gap-2.5">
+    <div className="mt-3 flex flex-col gap-2.5">
       {blocks.map((b, i) => {
         if (b.type === "products") {
           return (
@@ -145,39 +145,42 @@ export default function ChatWindow({ onCartUpdate, onOpenCart }: Props) {
   const showStarter = messages.length === 1;
 
   return (
-    <div className="w-full max-w-[820px] flex flex-col min-h-0 bg-ps-bg">
+    <div className="w-full max-w-[860px] flex flex-col min-h-0">
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto px-4 pt-5 pb-2 flex flex-col gap-3.5" ref={containerRef} onScroll={onScroll}>
+      <div className="flex-1 overflow-y-auto px-4 pt-6 pb-4 flex flex-col gap-5" ref={containerRef} onScroll={onScroll}>
         {messages.map((m, i) => (
-          <div key={i} className={`flex gap-2 items-start ${m.role === "user" ? "justify-end" : "justify-start"}`}>
+          <div key={i} className={`flex gap-3 items-start ${m.role === "user" ? "justify-end" : "justify-start"}`}>
             {m.role === "assistant" && (
-              <div className="flex-none w-8 h-8 rounded-full bg-gradient-to-br from-ps-teal to-ps-teal-dark text-white text-[11px] font-extrabold grid place-items-center shadow-md mt-0.5">
+              <div className="flex-none w-7 h-7 rounded-lg bg-ps-teal text-white text-[10px] font-bold grid place-items-center mt-0.5 shadow-sm">
                 PS
               </div>
             )}
-            <div className={`max-w-[86%] px-4 py-3 rounded-[14px] text-[14.5px] leading-relaxed shadow-sm animate-[fade-up_0.28s_ease_both] ${
+            <div className={`max-w-[80%] ${
               m.role === "user"
-                ? "bg-ps-teal text-white rounded-br-sm"
-                : `bg-ps-surface border border-ps-border rounded-bl-sm max-w-[92%] ${m.error ? "bg-red-50 border-red-200" : ""}`
-            }`}>
+                ? "bg-ps-teal text-white rounded-2xl rounded-br-md px-4 py-2.5"
+                : `bg-white rounded-2xl rounded-bl-md px-4 py-3 shadow-sm border border-ps-border/50 ${m.error ? "bg-red-50 border-red-200" : ""}`
+            } animate-[fade-up_0.2s_ease_both]`}>
+              {/* Attached images */}
               {m.images && m.images.length > 0 && (
                 <div className="flex flex-wrap gap-1.5 mb-2">
                   {m.images.map((img, idx) => (
-                    <img key={idx} src={`data:${img.mediaType};base64,${img.data}`} alt={img.name} className="w-16 h-16 rounded-lg object-cover border border-white/20" />
+                    <img key={idx} src={`data:${img.mediaType};base64,${img.data}`} alt={img.name} className="w-14 h-14 rounded-lg object-cover border border-white/20" />
                   ))}
                 </div>
               )}
+              {/* Text content */}
               {m.content && (
-                <div className="[&_p]:mb-2 [&_p:last-child]:mb-0 [&_strong]:font-bold [&_ul]:my-1.5 [&_ul]:pl-5 [&_a]:text-ps-teal" dangerouslySetInnerHTML={{ __html: marked.parse(m.content) as string }} />
+                <div className="text-[14px] leading-relaxed [&_p]:mb-2 [&_p:last-child]:mb-0 [&_strong]:font-semibold [&_ul]:my-1.5 [&_ul]:pl-5 [&_a]:text-ps-teal [&_a]:underline" dangerouslySetInnerHTML={{ __html: marked.parse(m.content) as string }} />
               )}
+              {/* Loading status */}
               {m.status && (
-                <div className="inline-flex items-center gap-2 mt-2 text-[13px] text-ps-muted">
-                  <span className="inline-flex gap-[3px]">
+                <div className="flex items-center gap-2 mt-1.5 text-[13px] text-ps-muted">
+                  <span className="flex gap-1">
                     {[0, 1, 2].map((n) => (
-                      <span key={n} className="w-1.5 h-1.5 rounded-full bg-ps-teal opacity-40 animate-[bounce-dot_1.2s_infinite]" style={{ animationDelay: `${n * 0.15}s` }} />
+                      <span key={n} className="w-1.5 h-1.5 rounded-full bg-ps-teal/60 animate-[bounce-dot_1.2s_infinite]" style={{ animationDelay: `${n * 0.15}s` }} />
                     ))}
                   </span>
-                  {m.status}
+                  <span>{m.status}</span>
                 </div>
               )}
               <Blocks blocks={m.blocks} onCartUpdate={onCartUpdate} />
@@ -188,21 +191,21 @@ export default function ChatWindow({ onCartUpdate, onOpenCart }: Props) {
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Input */}
+      {/* Input area */}
       <div
-        className={`px-4 pt-3 pb-3.5 bg-ps-bg border-t border-ps-border ${isDragging ? "ring-2 ring-ps-teal ring-inset bg-ps-teal/5" : ""}`}
+        className={`px-4 pt-3 pb-4 bg-white/80 backdrop-blur-sm border-t border-ps-border/40 ${isDragging ? "ring-2 ring-ps-teal/30 ring-inset" : ""}`}
         onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
         onDragLeave={() => setIsDragging(false)}
         onDrop={(e) => { e.preventDefault(); setIsDragging(false); addFiles(e.dataTransfer.files); }}
       >
-        {/* Attachment preview strip */}
+        {/* Attachment previews */}
         {attachments.length > 0 && (
-          <div className="flex gap-2 mb-2 px-1">
+          <div className="flex gap-2 mb-2.5">
             {attachments.map((img, idx) => (
               <div key={idx} className="relative group">
-                <img src={`data:${img.mediaType};base64,${img.data}`} alt={img.name} className="w-14 h-14 rounded-lg object-cover border border-ps-border" />
+                <img src={`data:${img.mediaType};base64,${img.data}`} alt={img.name} className="w-12 h-12 rounded-lg object-cover border border-ps-border" />
                 <button
-                  className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-red-500 text-white text-xs grid place-items-center opacity-0 group-hover:opacity-100 transition-opacity"
+                  className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-red-500 text-white text-[9px] grid place-items-center opacity-0 group-hover:opacity-100 transition-opacity shadow-sm"
                   onClick={() => removeAttachment(idx)}
                   aria-label={`Remove ${img.name}`}
                 >✕</button>
@@ -210,16 +213,15 @@ export default function ChatWindow({ onCartUpdate, onOpenCart }: Props) {
             ))}
           </div>
         )}
-        <div className="flex items-end gap-2 bg-ps-surface border border-ps-border rounded-3xl px-4 py-1.5 focus-within:border-ps-teal focus-within:shadow-[0_0_0_4px_rgba(51,119,120,0.1)] transition-all">
-          {/* Attach button */}
+        <div className="max-w-[860px] mx-auto flex items-end gap-2 bg-white border border-ps-border rounded-2xl px-3 py-2 shadow-sm focus-within:border-ps-teal/50 focus-within:shadow-[0_0_0_3px_rgba(42,124,126,0.08)] transition-all">
           <button
-            className="flex-none w-8 h-8 rounded-full text-ps-muted hover:text-ps-teal hover:bg-ps-teal/10 grid place-items-center transition-colors"
+            className="flex-none w-8 h-8 rounded-lg text-ps-muted hover:text-ps-teal hover:bg-ps-teal-light grid place-items-center transition-colors"
             onClick={() => fileInputRef.current?.click()}
             disabled={isStreaming}
             aria-label="Attach image"
           >
-            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48" />
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>
             </svg>
           </button>
           <input
@@ -235,34 +237,33 @@ export default function ChatWindow({ onCartUpdate, onOpenCart }: Props) {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={onKeyDown}
-            placeholder={attachments.length > 0 ? "Describe what you need help with…" : "Ask about a refrigerator or dishwasher part…"}
+            placeholder={attachments.length > 0 ? "Add a message..." : "Ask about a refrigerator or dishwasher part…"}
             rows={1}
             disabled={isStreaming}
-            className="flex-1 resize-none border-none outline-none bg-transparent py-2.5 text-[14.5px] leading-snug max-h-[140px] text-ps-text placeholder:text-ps-muted"
+            className="flex-1 resize-none border-none outline-none bg-transparent py-1.5 text-[14px] leading-snug max-h-[120px] text-ps-text placeholder:text-ps-muted/60"
           />
           <button
-            className="flex-none w-10 h-10 rounded-full bg-ps-teal text-white border-none grid place-items-center cursor-pointer hover:bg-ps-teal-dark active:scale-[0.92] disabled:bg-gray-300 disabled:cursor-not-allowed transition-all"
+            className="flex-none w-8 h-8 rounded-lg bg-ps-teal text-white grid place-items-center cursor-pointer hover:bg-ps-teal-dark active:scale-95 disabled:bg-ps-border disabled:text-ps-muted disabled:cursor-not-allowed transition-all"
             onClick={() => send()}
             disabled={isStreaming || (!input.trim() && attachments.length === 0)}
             aria-label="Send"
           >
             {isStreaming ? (
-              <span className="inline-flex gap-[3px]">
+              <span className="flex gap-0.5">
                 {[0, 1, 2].map((n) => (
-                  <span key={n} className="w-[5px] h-[5px] rounded-full bg-white animate-[bounce-dot_1.2s_infinite]" style={{ animationDelay: `${n * 0.15}s` }} />
+                  <span key={n} className="w-1 h-1 rounded-full bg-white animate-[bounce-dot_1.2s_infinite]" style={{ animationDelay: `${n * 0.15}s` }} />
                 ))}
               </span>
             ) : (
-              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                <line x1="12" y1="19" x2="12" y2="5" /><polyline points="6 11 12 5 18 11" />
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="12" y1="19" x2="12" y2="5" /><polyline points="5 12 12 5 19 12" />
               </svg>
             )}
           </button>
         </div>
         {isDragging && (
-          <div className="text-center text-sm text-ps-teal font-medium mt-2">Drop image here</div>
+          <div className="text-center text-xs text-ps-teal font-medium mt-2">Drop image here</div>
         )}
-        <div className="text-center text-[11px] text-ps-muted mt-2">PartSelect Assistant · Refrigerator &amp; Dishwasher parts</div>
       </div>
     </div>
   );

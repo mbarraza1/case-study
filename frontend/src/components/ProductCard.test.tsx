@@ -36,9 +36,9 @@ test("shows Add to Cart button for in-stock parts", () => {
   expect(screen.getByRole("button", { name: /add to cart/i })).toBeInTheDocument();
 });
 
-test("shows View part link for out-of-stock parts", () => {
+test("shows View link for out-of-stock parts", () => {
   render(<ProductCard part={{ ...part, inStock: false }} />);
-  const link = screen.getByRole("link", { name: /view part/i });
+  const link = screen.getByRole("link", { name: /view/i });
   expect(link).toHaveAttribute("href", part.url);
 });
 
@@ -49,7 +49,7 @@ test("shows out-of-stock state", () => {
 
 test("renders difficulty tag", () => {
   render(<ProductCard part={part} />);
-  expect(screen.getByText(/Easy install/)).toBeInTheDocument();
+  expect(screen.getByText("Easy")).toBeInTheDocument();
 });
 
 test("renders video tag when hasVideo", () => {

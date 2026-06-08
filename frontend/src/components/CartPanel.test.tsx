@@ -46,16 +46,16 @@ test("shows total price", () => {
   expect(screen.getByText("$104.66")).toBeInTheDocument();
 });
 
-test("shows Buy on PartSelect links for each item", () => {
+test("shows Buy links for each item", () => {
   render(<CartPanel items={mockItems} onClose={() => {}} onUpdate={() => {}} />);
-  const links = screen.getAllByRole("link", { name: /buy.*on partselect/i });
+  const links = screen.getAllByRole("link", { name: /buy ps/i });
   expect(links).toHaveLength(2);
   expect(links[0]).toHaveAttribute("href", mockItems[0].url);
 });
 
 test("shows item count in header", () => {
   render(<CartPanel items={mockItems} onClose={() => {}} onUpdate={() => {}} />);
-  expect(screen.getByText("(3)")).toBeInTheDocument();
+  expect(screen.getByText("3 items")).toBeInTheDocument();
 });
 
 test("shows remove buttons", () => {
