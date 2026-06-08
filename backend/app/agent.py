@@ -23,7 +23,10 @@ from .tools import TOOLS, run_tool
 
 MODEL = "claude-sonnet-4-6"
 MAX_TOOL_TURNS = 6
-MAX_TOKENS = 4096
+MAX_TOKENS = 2048
+
+# Reuse a single HTTP client across requests (connection pooling)
+_http_client = httpx.AsyncClient(verify=False)
 
 SYSTEM_PROMPT = """You are the PartSelect Assistant, the chat agent on PartSelect.com — a retailer of \
 appliance repair parts. You help customers with **Refrigerator parts** and **Dishwasher parts** only.
@@ -115,7 +118,7 @@ async def run_agent(history: list[dict], session_id: str = "default") -> AsyncIt
         yield {"type": "error", "message": "No user message to respond to."}
         return
 
-    client = AsyncAnthropic(http_client=httpx.AsyncClient(verify=False))
+    client = AsyncAnthropic(http_client=_http_client)
     try:
         emitted_text = False
         for _ in range(MAX_TOOL_TURNS):
@@ -124,8 +127,6 @@ async def run_agent(history: list[dict], session_id: str = "default") -> AsyncIt
                 max_tokens=MAX_TOKENS,
                 system=SYSTEM_PROMPT,
                 tools=TOOLS,
-                thinking={"type": "adaptive"},
-                output_config={"effort": "medium"},
                 messages=messages,
             ) as stream:
                 first_text_in_turn = True
