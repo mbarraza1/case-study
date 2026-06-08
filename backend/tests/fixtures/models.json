@@ -1,0 +1,20 @@
+{
+  "WDT780SAEM1": {
+    "model": "WDT780SAEM1",
+    "brand": "Whirlpool",
+    "applianceType": "Dishwasher",
+    "parts": ["PS3406971", "PS11745496"]
+  },
+  "WDT750SAHZ0": {
+    "model": "WDT750SAHZ0",
+    "brand": "Whirlpool",
+    "applianceType": "Dishwasher",
+    "parts": ["PS3406971"]
+  },
+  "WRS325SDHZ08": {
+    "model": "WRS325SDHZ08",
+    "brand": "Whirlpool",
+    "applianceType": "Refrigerator",
+    "parts": ["PS11752778", "PS734936"]
+  }
+}

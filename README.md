@@ -1,70 +1,196 @@
-# Getting Started with Create React App
+# PartSelect Assistant
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+An AI-powered chat agent for PartSelect.com, scoped to **Refrigerator** and **Dishwasher** parts. It helps customers find parts, verify compatibility, get installation guidance, troubleshoot symptoms, and manage a shopping cart — with results rendered as rich interactive cards.
 
-## Available Scripts
+## What it does
 
-In the project directory, you can run:
+- **Guided onboarding** — select your appliance, then choose from common symptoms, model lookup, or part browsing
+- **Find parts** by name, symptom, brand, or PartSelect (PS) number
+- **Compatibility** — "Is PS11752778 compatible with my WDT780SAEM1?" → clear yes/no with confidence level
+- **Model lookup** — "What parts fit my GNE27JYMWFFS?" → all compatible parts with confirmation banner
+- **Installation** — difficulty rating, time estimate, and how-to video
+- **Troubleshooting** — "My dishwasher won't drain" → parts that fix it, ranked by relevance
+- **Shopping cart** — add parts from chat, view in slide-out panel, buy on PartSelect.com
+- **Image attachments** — photograph a model tag or broken part, Claude vision identifies it
+- **Scope guardrails** — politely declines anything outside refrigerator/dishwasher parts
 
-### `npm start`
+## Architecture
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+```
+Next.js 16 (port 3000)                    FastAPI (port 8000)
+├── App Router + Tailwind CSS v4           ├── /api/chat (SSE streaming)
+├── TypeScript components                  ├── /api/cart/* (cart CRUD)
+├── SSE streaming client                   ├── /api/parts/{ps}
+├── Static product images                  └── /api/health
+└── Rewrites /api/* → FastAPI
+                                           Claude Sonnet 4.6 (tool-use loop)
+                                           ├── 8 tools (search, compat, troubleshoot...)
+                                           └── Catalog retrieval (parts.json + models.json)
+```
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+## Tech Stack
 
-### `npm test`
+| Layer | Technology |
+|-------|-----------|
+| Frontend | Next.js 16, TypeScript, Tailwind CSS v4, marked |
+| Backend | FastAPI, Python 3.13, Pydantic v2, uvicorn |
+| AI | Claude Sonnet 4.6 (Anthropic SDK, streaming tool-use) |
+| Data | Static JSON catalog (985 parts, 4,997 models) |
+| Scraper | Playwright (offline, drives Chrome to bypass Akamai) |
+| Testing | pytest (59 tests), Jest + Testing Library (56 tests) |
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+## Setup
 
-### `npm run build`
+### Prerequisites
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+- **Node.js** 18+ and npm
+- **Python** 3.11+
+- **Anthropic API key** (or access to a compatible proxy)
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+### macOS
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+```bash
+# Clone
+git clone https://github.com/mbarraza1/case-study.git
+cd case-study
 
-### `npm run eject`
+# Backend
+cd backend
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+cp .env.example .env
+# Edit .env → set ANTHROPIC_API_KEY=sk-ant-...
+cd ..
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+# Frontend
+cd frontend
+npm install
+cd ..
+```
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+### Windows
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+```powershell
+# Clone
+git clone https://github.com/mbarraza1/case-study.git
+cd case-study
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+# Backend
+cd backend
+python -m venv .venv
+.venv\Scripts\activate
+pip install -r requirements.txt
+copy .env.example .env
+# Edit .env → set ANTHROPIC_API_KEY=sk-ant-...
+cd ..
 
-## Learn More
+# Frontend
+cd frontend
+npm install
+cd ..
+```
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+## Run (two terminals)
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+### macOS
 
-### Code Splitting
+```bash
+# Terminal 1 — Backend
+cd backend
+source .venv/bin/activate
+uvicorn app.main:app --reload --port 8000
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+# Terminal 2 — Frontend
+cd frontend
+npm run dev
+```
 
-### Analyzing the Bundle Size
+### Windows
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+```powershell
+# Terminal 1 — Backend
+cd backend
+.venv\Scripts\activate
+uvicorn app.main:app --reload --port 8000
 
-### Making a Progressive Web App
+# Terminal 2 — Frontend
+cd frontend
+npm run dev
+```
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+Open **http://localhost:3000** in your browser.
 
-### Advanced Configuration
+### Verify without an API key
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+```bash
+curl http://localhost:8000/api/health        # catalog stats
+curl http://localhost:8000/api/parts/PS11752778   # part details
+```
 
-### Deployment
+## Try these
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+- Click **Dishwasher** → **Won't drain** (guided troubleshooting)
+- `What parts do you have for my GNE27JYMWFFS?` (model lookup + compatibility banner)
+- `Is PS11752778 compatible with my WDT780SAEM1?` (cross-appliance incompatibility)
+- `How can I install part PS11752778?` (install guide with video)
+- `The ice maker on my GE fridge isn't working` (symptom troubleshooting)
+- Attach a photo of your model tag (vision identification)
+- Click **Add to Cart** on any product card, then open the cart panel
 
-### `npm run build` fails to minify
+## Tests
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+```bash
+# Backend (59 tests — catalog, compatibility, tools, agent, cart, scraper)
+cd backend
+source .venv/bin/activate   # macOS
+# .venv\Scripts\activate    # Windows
+pytest
+
+# Frontend (56 tests — components, API, SSE parsing)
+cd frontend
+npm test
+```
+
+Backend tests run against fixture data — no API key or network needed.
+
+## Project Structure
+
+```
+case-study/
+├── backend/
+│   ├── app/
+│   │   ├── main.py          # FastAPI endpoints (health, parts, cart, chat SSE)
+│   │   ├── agent.py         # Claude streaming tool-use loop + system prompt
+│   │   ├── tools.py         # 8 tool schemas + dispatch
+│   │   ├── catalog.py       # Retrieval layer (search, compat, troubleshoot)
+│   │   ├── cart.py          # In-memory cart storage
+│   │   ├── schemas.py       # Pydantic request models
+│   │   └── data/            # parts.json, models.json, images/
+│   ├── scraper/             # Playwright catalog + image scrapers
+│   └── tests/               # pytest suite
+├── frontend/
+│   ├── src/
+│   │   ├── app/             # Next.js App Router (layout, page, globals.css)
+│   │   ├── components/      # ChatWindow, ProductCard, CartPanel, etc.
+│   │   └── lib/             # api.ts, session.ts, types.ts
+│   ├── public/parts/        # Pre-cached product images (118)
+│   ├── next.config.ts       # API rewrites, image config
+│   └── jest.config.ts       # Test configuration
+└── README.md
+```
+
+## Key Design Decisions
+
+- **Grounded responses** — the agent can only surface data tools return from the catalog. It cannot invent part numbers, prices, or compatibility claims.
+- **Prefix-stem matching** — "drain" matches "draining", "cool" matches "cooling". Fast deterministic retrieval without embeddings.
+- **No filler text** — system prompt instructs Claude to call tools immediately and never narrate its search process.
+- **Static images** — PartSelect's CDN is behind Akamai (403s all external requests). Images are pre-captured via Playwright and served as Next.js static files.
+- **Session-based cart** — UUID in localStorage + backend in-memory store. Survives refresh, isolated per user.
+
+## Extending
+
+- **New tool** → add schema + handler in `backend/app/tools.py`
+- **More data** → re-implement functions in `backend/app/catalog.py` (e.g., Postgres + pgvector)
+- **More appliances** → widen scraper `--appliances` flag and system prompt scope
+- **Production deployment** → add persistent cart storage (Redis/Postgres), proper session auth, rate limiting
