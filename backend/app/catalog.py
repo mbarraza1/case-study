@@ -29,6 +29,17 @@ _STOP = {
 }
 
 
+def _prefix_match(token: str, token_set: set[str]) -> bool:
+    """Check if token matches any in the set via exact or prefix (stem) matching.
+    'drain' matches 'draining', 'cool' matches 'cooling', etc."""
+    if token in token_set:
+        return True
+    for s in token_set:
+        if len(token) >= 3 and (s.startswith(token) or token.startswith(s)):
+            return True
+    return False
+
+
 def _norm_model(s: str) -> str:
     """Normalize a model number for comparison (drop spaces, dashes, case)."""
     return re.sub(r"[^A-Z0-9]", "", (s or "").upper())
@@ -137,15 +148,15 @@ class Catalog:
         brand_t = set(_tokens(part.get("brand", "")))
         score = 0.0
         for t in qtokens:
-            if t in name_t:
+            if _prefix_match(t, name_t):
                 score += 3.0
-            if t in type_t:
+            if _prefix_match(t, type_t):
                 score += 2.5
-            if t in sym_t:
+            if _prefix_match(t, sym_t):
                 score += 2.0
             if t in brand_t:
                 score += 1.5
-            if t in desc_t:
+            if _prefix_match(t, desc_t):
                 score += 0.75
         # Only parts with an actual keyword match are results. The in-stock /
         # review boosts merely break ties — they must NOT lift a zero-match part
@@ -240,11 +251,11 @@ class Catalog:
             name_t = set(_tokens(p.get("name", "")))
             score = 0.0
             for t in stoks:
-                if t in sym_t:
+                if _prefix_match(t, sym_t):
                     score += 3.0
-                if t in type_t:
+                if _prefix_match(t, type_t):
                     score += 1.5
-                if t in name_t:
+                if _prefix_match(t, name_t):
                     score += 1.0
             if score > 0:
                 # prefer parts that actually carry symptom metadata + reviews
